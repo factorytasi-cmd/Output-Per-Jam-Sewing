@@ -502,7 +502,7 @@ label.field-label:first-of-type { margin-top: 0; }
 
 <script>
 const SHEET_ID_READ  = '1HqbEcfOaLP-2EYZ3dQ13gnaIVKobZxU97r3qSI0c_6E';
-const SHEET_ID_WRITE = '1s7fBhVdlNwjRGqAObW1-P7Dk7ZBBG1dBrbMkJrh4EBk';
+const SHEET_ID_WRITE = '1s7fBhVdlNwjRGqAObW1-P7Dk7ZBBG1dBrbMkJrh4EBk'; // sheet: Output Per Jam
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbw3Ob3p5UVFM8O6rSDMz_7KNN3ICVhWiXO8ftSo-rrA_RpCFzo8g5QKLFa2JZbkf6-o/exec';
 
 let allData = [];
@@ -663,16 +663,11 @@ function escRe(s) { return s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'); }
 async function loadSheetData() {
   showLoading('Memuat database...');
   try {
-    const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID_READ}/gviz/tq?tqx=out:json&sheet=Sheet1`;
+    const url = `${GAS_URL}?type=litra`;
     const res  = await fetch(url);
-    const text = await res.text();
-    const json = JSON.parse(text.substring(47, text.length - 2));
-    allData = json.table.rows.map(r => ({
-      line:  r.c[0]?.v ? String(r.c[0].v).trim() : '',
-      spo:   r.c[1]?.v ? String(r.c[1].v).trim() : '',
-      style: r.c[2]?.v ? String(r.c[2].v).trim() : '',
-      size:  r.c[3]?.v ? String(r.c[3].v).trim() : '',
-    })).filter(r => r.line || r.spo);
+    const json = await res.json();
+    if (json.status !== 'ok') throw new Error('GAS error');
+    allData = json.rows.filter(r => r.line || r.spo);
     setupLineAutocomplete();
     setupSPOAutocomplete();
     setupMainSizeAutocomplete();
