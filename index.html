@@ -536,21 +536,48 @@ function makeAC(inputId, dropdownId, getOpts, onSelect) {
 function escRe(s){ return s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'); }
 
 // ── LOAD DATA ──
+const CACHE_KEY     = 'litra_db';
+const CACHE_TTL     = 60 * 60 * 1000; // 1 jam dalam ms
+
 async function loadSheetData() {
-  showLoading('Memuat database...');
+  // ── Coba ambil dari cache dulu ──
+  try {
+    const raw = localStorage.getItem(CACHE_KEY);
+    if (raw) {
+      const cache = JSON.parse(raw);
+      if (Date.now() - cache.ts < CACHE_TTL) {
+        allData = cache.rows;
+        setupLineAC();
+        setupSPOAC();
+        setupMainSizeAC();
+        // Refresh di background tanpa loading screen
+        fetchAndCache(false);
+        return;
+      }
+    }
+  } catch(e) {}
+
+  // ── Tidak ada cache / expired, tarik dari GAS ──
+  await fetchAndCache(true);
+}
+
+async function fetchAndCache(showLoader) {
+  if (showLoader) showLoading('Memuat database...');
   try {
     const url  = GAS_URL + '?type=litra';
     const res  = await fetch(url);
     const json = await res.json();
     if (json.status !== 'ok') throw new Error('GAS error');
     allData = json.rows.filter(r => r.line || r.spo);
+    // Simpan ke cache
+    localStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), rows: allData }));
     setupLineAC();
     setupSPOAC();
     setupMainSizeAC();
   } catch(e) {
-    showToast('Gagal memuat database. Cek koneksi.', 'error');
+    if (showLoader) showToast('Gagal memuat database. Cek koneksi.', 'error');
   } finally {
-    hideLoading();
+    if (showLoader) hideLoading();
   }
 }
 
