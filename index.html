@@ -1,0 +1,921 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>LITRA-ASI — Output Produksi</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --blue:      #1565C0;
+  --blue-mid:  #1976D2;
+  --blue-light:#E3F2FD;
+  --blue-dark: #0D47A1;
+  --teal:      #00897B;
+  --teal-mid:  #26A69A;
+  --teal-light:#E0F2F1;
+  --teal-dark: #00695C;
+  --grad:      linear-gradient(135deg, #1565C0 0%, #0097A7 55%, #00897B 100%);
+  --grad-soft: linear-gradient(135deg, #E3F2FD 0%, #E0F7FA 55%, #E0F2F1 100%);
+  --text-dark: #1a1a1a;
+  --text-mid:  #444;
+  --text-muted:#777;
+  --border:    #dde3e8;
+  --surface:   #f2f5f8;
+  --white:     #fff;
+  --radius:    10px;
+}
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: var(--surface);
+  min-height: 100vh;
+  color: var(--text-dark);
+}
+
+/* ── HEADER ── */
+.header {
+  background: var(--white);
+  border-bottom: 1.5px solid #dce8f0;
+  padding: 0 16px;
+  position: sticky; top: 0; z-index: 100;
+}
+.header-top {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 0 6px;
+}
+.brand { display: flex; align-items: center; gap: 10px; }
+.brand-logo {
+  width: 38px; height: 38px;
+  background: var(--grad);
+  border-radius: 9px;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 15px; color: #fff;
+  flex-shrink: 0;
+}
+.brand-text h1 {
+  font-size: 16px; font-weight: 700; line-height: 1.2;
+  background: var(--grad);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.brand-text p { font-size: 9.5px; color: var(--text-muted); line-height: 1.3; }
+.live-badge {
+  display: flex; align-items: center; gap: 5px;
+  background: var(--blue-light); border: 1px solid #90CAF9;
+  border-radius: 20px; padding: 4px 10px;
+  font-size: 11px; font-weight: 600; color: var(--blue-dark);
+}
+.live-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--blue-mid);
+  animation: pulse 1.5s ease-in-out infinite;
+}
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.35} }
+.header-sub {
+  font-size: 10px; color: var(--text-muted);
+  padding-bottom: 8px;
+  display: flex; align-items: center; gap: 6px;
+}
+.header-sub span { color: var(--blue-mid); font-weight: 600; }
+
+/* ── MAIN ── */
+.main { padding: 14px; max-width: 480px; margin: 0 auto; }
+
+/* ── DATE BAR ── */
+.date-bar {
+  background: var(--grad-soft);
+  border: 1px solid #B3E5FC;
+  border-radius: 10px; padding: 9px 14px;
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 14px;
+}
+.date-bar-label { font-size: 11px; color: var(--blue); font-weight: 600; }
+.date-bar-value { font-size: 13px; font-weight: 700; color: var(--blue-dark); }
+
+/* ── CARD ── */
+.card {
+  background: var(--white);
+  border-radius: 14px;
+  border: 1px solid #dce8f0;
+  padding: 16px 14px;
+  margin-bottom: 12px;
+}
+.card-title {
+  font-size: 11px; font-weight: 700;
+  letter-spacing: 0.8px; text-transform: uppercase;
+  margin-bottom: 12px;
+  display: flex; align-items: center; gap: 6px;
+  background: var(--grad);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ── STEP BADGE ── */
+.step-num {
+  width: 20px; height: 20px; border-radius: 50%;
+  background: var(--grad);
+  color: #fff; font-size: 10px; font-weight: 700;
+  display: inline-flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  -webkit-text-fill-color: #fff;
+}
+
+/* ── LABELS ── */
+label.field-label {
+  display: block; font-size: 12px; font-weight: 600;
+  color: var(--text-mid); margin-bottom: 5px; margin-top: 12px;
+}
+label.field-label:first-of-type { margin-top: 0; }
+
+/* ── INPUTS ── */
+.autocomplete-wrap { position: relative; }
+.field-input {
+  width: 100%; padding: 10px 12px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  font-size: 14px; color: var(--text-dark);
+  background: #f8fafd; outline: none;
+  transition: border-color 0.2s;
+  appearance: none;
+}
+.field-input:focus { border-color: var(--blue-mid); background: #fff; }
+.field-input:disabled { background: #f0f0f0; color: #aaa; cursor: not-allowed; }
+.field-input::placeholder { color: #bbb; }
+
+/* ── DROPDOWN ── */
+.dropdown-list {
+  position: absolute; top: calc(100% + 3px); left: 0; right: 0;
+  background: var(--white);
+  border: 1.5px solid var(--blue-mid);
+  border-radius: var(--radius);
+  max-height: 180px; overflow-y: auto;
+  z-index: 200; display: none;
+  box-shadow: 0 4px 16px rgba(21,101,192,0.12);
+}
+.dropdown-list.open { display: block; }
+.dropdown-item {
+  padding: 10px 14px; font-size: 14px; cursor: pointer;
+  border-bottom: 1px solid #f0f0f0; color: var(--text-dark);
+  transition: background 0.1s;
+}
+.dropdown-item:last-child { border-bottom: none; }
+.dropdown-item:hover { background: var(--blue-light); color: var(--blue-dark); }
+.dropdown-item mark { background: none; color: var(--blue-mid); font-weight: 700; }
+.no-result { padding: 10px 14px; font-size: 13px; color: var(--text-muted); }
+
+/* ── STYLE DISPLAY ── */
+.field-filled {
+  font-size: 13px; color: var(--blue-dark);
+  background: var(--blue-light);
+  border: 1px solid #90CAF9;
+  border-radius: 8px; padding: 9px 12px;
+  display: flex; align-items: center; gap: 6px;
+  min-height: 38px;
+}
+
+/* ── JAM GRID ── */
+.jam-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+}
+.jam-btn {
+  border: 1.5px solid var(--border);
+  background: #f8fafd;
+  border-radius: 8px; padding: 8px 2px;
+  text-align: center; font-size: 13px; font-weight: 600;
+  color: var(--text-mid); cursor: pointer;
+  transition: all 0.15s; user-select: none;
+}
+.jam-btn:hover { border-color: var(--blue-mid); color: var(--blue); background: var(--blue-light); }
+.jam-btn.selected {
+  background: var(--grad); color: #fff;
+  border-color: transparent;
+}
+
+/* ── SIZE ENTRIES ── */
+.size-entries { display: flex; flex-direction: column; gap: 8px; }
+.size-entry {
+  background: var(--grad-soft);
+  border: 1px solid #B3E5FC;
+  border-radius: 10px; padding: 10px 12px;
+}
+.size-entry-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 8px;
+}
+.size-entry-label {
+  font-size: 11px; font-weight: 700; color: var(--blue-dark);
+  text-transform: uppercase; letter-spacing: 0.5px;
+}
+.size-entry-remove {
+  width: 22px; height: 22px; border-radius: 50%;
+  background: #fff; border: 1px solid #f28b82;
+  color: #c62828; font-size: 14px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; flex-shrink: 0; line-height: 1;
+}
+.size-entry-fields {
+  display: grid; grid-template-columns: 1fr; gap: 6px;
+}
+.output-row {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 6px;
+}
+
+/* ── OUTPUT TYPE CHIPS ── */
+.chip-row { display: flex; gap: 8px; }
+.chip {
+  flex: 1; border: 1.5px solid var(--border);
+  background: #f8fafd; border-radius: 8px;
+  padding: 9px 6px; text-align: center;
+  font-size: 12px; font-weight: 700; color: var(--text-mid);
+  cursor: pointer; transition: all 0.15s; user-select: none;
+}
+.chip:hover { border-color: var(--blue-mid); color: var(--blue); background: var(--blue-light); }
+.chip.selected { background: var(--grad); color: #fff; border-color: transparent; }
+.chip-sub { font-size: 10px; font-weight: 400; opacity: 0.8; display: block; margin-top: 2px; }
+
+/* ── NUMBER INPUT ── */
+.number-wrap { position: relative; }
+.number-input {
+  width: 100%; padding: 10px 44px 10px 14px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  font-size: 18px; font-weight: 700;
+  color: var(--blue-dark); background: #f8fafd;
+  outline: none; transition: border-color 0.2s;
+  -moz-appearance: textfield;
+}
+.number-input::-webkit-inner-spin-button,
+.number-input::-webkit-outer-spin-button { -webkit-appearance: none; }
+.number-input:focus { border-color: var(--blue-mid); background: #fff; }
+.unit-label {
+  position: absolute; right: 12px; top: 50%;
+  transform: translateY(-50%);
+  font-size: 11px; font-weight: 600; color: var(--text-muted);
+  pointer-events: none;
+}
+
+/* ── ADD SIZE BUTTON ── */
+.add-size-btn {
+  width: 100%; border: 1.5px dashed var(--blue-mid);
+  background: var(--blue-light); border-radius: 10px;
+  padding: 11px; text-align: center;
+  font-size: 13px; font-weight: 600; color: var(--blue);
+  cursor: pointer; transition: all 0.15s; margin-top: 8px;
+}
+.add-size-btn:hover { background: #BBDEFB; border-color: var(--blue-dark); }
+
+/* ── TOGGLE ── */
+.toggle-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 0;
+}
+.toggle-wrap {
+  position: relative; width: 44px; height: 24px; flex-shrink: 0;
+}
+.toggle-wrap input { opacity: 0; width: 0; height: 0; position: absolute; }
+.toggle-slider {
+  position: absolute; inset: 0;
+  background: #ccc; border-radius: 24px;
+  cursor: pointer; transition: background 0.2s;
+}
+.toggle-slider::after {
+  content: ''; position: absolute;
+  width: 18px; height: 18px; border-radius: 50%;
+  background: #fff; top: 3px; left: 3px;
+  transition: transform 0.2s;
+}
+.toggle-wrap input:checked + .toggle-slider { background: var(--blue-mid); }
+.toggle-wrap input:checked + .toggle-slider::after { transform: translateX(20px); }
+.toggle-text { font-size: 13px; font-weight: 600; color: var(--text-mid); }
+.toggle-sub { font-size: 11px; color: var(--text-muted); display: block; }
+
+/* ── EXTRA SIZES SECTION ── */
+#extra-sizes-section { display: none; margin-top: 4px; }
+#extra-sizes-section.visible { display: block; }
+
+/* ── ERROR MSG ── */
+.error-msg { font-size: 11px; color: #c62828; margin-top: 4px; display: none; }
+.error-msg.show { display: block; }
+
+/* ── PREVIEW ── */
+.preview-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 7px 0; border-bottom: 1px solid #f0f0f0; font-size: 13px;
+}
+.preview-row:last-child { border-bottom: none; }
+.preview-key { color: var(--text-muted); }
+.preview-val { font-weight: 600; color: var(--text-dark); text-align: right; max-width: 60%; }
+
+/* ── SUBMIT ── */
+.submit-btn {
+  width: 100%;
+  background: var(--grad);
+  color: #fff; border: none;
+  border-radius: 12px; padding: 15px;
+  font-size: 16px; font-weight: 700;
+  cursor: pointer; transition: all 0.18s;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  letter-spacing: 0.3px;
+}
+.submit-btn:hover { opacity: 0.92; }
+.submit-btn:active { transform: scale(0.98); }
+.submit-btn:disabled { background: #aaa; cursor: not-allowed; transform: none; opacity: 1; }
+
+/* ── TOAST ── */
+.toast {
+  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+  padding: 12px 22px; border-radius: 24px;
+  font-size: 14px; font-weight: 600; color: #fff;
+  z-index: 999; opacity: 0; pointer-events: none;
+  transition: opacity 0.3s; white-space: nowrap;
+  max-width: 90vw; text-align: center;
+}
+.toast.success { background: var(--teal-mid); }
+.toast.error   { background: #c62828; }
+.toast.show    { opacity: 1; pointer-events: auto; }
+
+/* ── LOADING ── */
+.loading-overlay {
+  position: fixed; inset: 0;
+  background: rgba(255,255,255,0.88);
+  display: none; align-items: center; justify-content: center;
+  flex-direction: column; gap: 12px; z-index: 500;
+}
+.loading-overlay.visible { display: flex; }
+.spinner {
+  width: 36px; height: 36px;
+  border: 3px solid var(--blue-light);
+  border-top-color: var(--blue-mid);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading-text { font-size: 13px; color: var(--text-muted); }
+
+.divider { height: 1px; background: #eef2f7; margin: 10px 0; }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="header">
+  <div class="header-top">
+    <div class="brand">
+      <div class="brand-logo">L</div>
+      <div class="brand-text">
+        <h1>LITRA-ASI</h1>
+        <p>Lean Intelligence Tracking &amp; Realtime Analytics — ASI</p>
+      </div>
+    </div>
+    <div class="live-badge">
+      <div class="live-dot"></div>Live
+    </div>
+  </div>
+  <div class="header-sub">
+    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+    <span id="header-date">—</span>&nbsp;·&nbsp;Output Produksi
+  </div>
+</header>
+
+<main class="main">
+
+  <!-- DATE BAR -->
+  <div class="date-bar">
+    <span class="date-bar-label">📅 Tanggal Input</span>
+    <span class="date-bar-value" id="today-display">—</span>
+  </div>
+
+  <!-- CARD 1: LINE, SPO, STYLE -->
+  <div class="card">
+    <div class="card-title">
+      <span class="step-num">1</span>Line &amp; SPO
+    </div>
+
+    <label class="field-label">Line Produksi</label>
+    <div class="autocomplete-wrap">
+      <input type="text" id="line-input" class="field-input" placeholder="Ketik nama line..." autocomplete="off" />
+      <div class="dropdown-list" id="line-dropdown"></div>
+    </div>
+
+    <label class="field-label">SPO / Order</label>
+    <div class="autocomplete-wrap">
+      <input type="text" id="spo-input" class="field-input" placeholder="Ketik SPO..." autocomplete="off" />
+      <div class="dropdown-list" id="spo-dropdown"></div>
+    </div>
+
+    <label class="field-label">Style</label>
+    <div class="field-filled" id="style-display">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#1565C0" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      <span id="style-text" style="color:#777;font-style:italic">Terisi otomatis saat SPO dipilih</span>
+    </div>
+  </div>
+
+  <!-- CARD 2: JAM -->
+  <div class="card">
+    <div class="card-title">
+      <span class="step-num">2</span>Jam Ke-
+    </div>
+    <div class="jam-grid" id="jam-grid"></div>
+    <div class="error-msg" id="jam-error">Pilih jam terlebih dahulu.</div>
+  </div>
+
+  <!-- CARD 3: SIZE (utama) + toggle tambah size -->
+  <div class="card">
+    <div class="card-title">
+      <span class="step-num">3</span>Size, Jenis Output &amp; Qty
+    </div>
+
+    <!-- ENTRY PERTAMA -->
+    <div id="main-size-entry">
+      <label class="field-label" style="margin-top:0">Size</label>
+      <div class="autocomplete-wrap">
+        <input type="text" id="size-input" class="field-input" placeholder="Pilih Line &amp; SPO dulu..." autocomplete="off" disabled />
+        <div class="dropdown-list" id="size-dropdown"></div>
+      </div>
+      <div class="error-msg" id="size-error">Pilih Line dan SPO terlebih dahulu.</div>
+
+      <label class="field-label">Jenis Output</label>
+      <div class="chip-row">
+        <div class="chip" id="chip-sewing-0" onclick="selectChip(0,'sewing')">
+          🧵 Out Sewing<span class="chip-sub">Jahit selesai</span>
+        </div>
+        <div class="chip" id="chip-nologo-0" onclick="selectChip(0,'nologo')">
+          📦 Out No Logo<span class="chip-sub">Tanpa logo</span>
+        </div>
+      </div>
+      <div class="error-msg" id="type-error-0">Pilih jenis output.</div>
+
+      <label class="field-label">Jumlah Output (pcs)</label>
+      <div class="number-wrap">
+        <input type="number" id="qty-input-0" class="number-input" placeholder="0" min="0" step="1" inputmode="numeric" oninput="sanitizeQty(this)" />
+        <span class="unit-label">pcs</span>
+      </div>
+      <div class="error-msg" id="qty-error-0">Masukkan jumlah yang valid.</div>
+    </div>
+
+    <div class="divider" style="margin-top:14px"></div>
+
+    <!-- TOGGLE TAMBAH SIZE -->
+    <div class="toggle-row">
+      <label class="toggle-wrap">
+        <input type="checkbox" id="toggle-extra" onchange="toggleExtraSizes(this.checked)" />
+        <span class="toggle-slider"></span>
+      </label>
+      <div>
+        <span class="toggle-text">Tambah Size?</span>
+        <span class="toggle-sub">Input beberapa size sekaligus</span>
+      </div>
+    </div>
+
+    <!-- EXTRA SIZES -->
+    <div id="extra-sizes-section">
+      <div id="extra-entries"></div>
+      <div class="add-size-btn" onclick="addSizeEntry()">＋ Tambah Size</div>
+    </div>
+  </div>
+
+  <!-- PREVIEW -->
+  <div class="card" id="preview-card" style="display:none">
+    <div class="card-title">
+      <span class="step-num">✓</span>Ringkasan
+    </div>
+    <div id="preview-content"></div>
+  </div>
+
+  <!-- SUBMIT -->
+  <button class="submit-btn" id="submit-btn" onclick="submitData()">
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 2L11 13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+    Kirim ke Google Sheet
+  </button>
+  <div style="height:32px"></div>
+
+</main>
+
+<!-- LOADING -->
+<div class="loading-overlay" id="loading">
+  <div class="spinner"></div>
+  <div class="loading-text" id="loading-text">Memuat data...</div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const SHEET_ID_READ  = '1HqbEcfOaLP-2EYZ3dQ13gnaIVKobZxU97r3qSI0c_6E';
+const SHEET_ID_WRITE = '1s7fBhVdlNwjRGqAObW1-P7Dk7ZBBG1dBrbMkJrh4EBk';
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbw3Ob3p5UVFM8O6rSDMz_7KNN3ICVhWiXO8ftSo-rrA_RpCFzo8g5QKLFa2JZbkf6-o/exec';
+
+let allData = [];
+let selectedLine = '';
+let selectedSPO  = '';
+let selectedStyle= '';
+let selectedJam  = null;
+
+// extra size entries: [{size, type, qty}]
+let extraEntries = [];
+let extraCount   = 0;
+
+// per-entry state: index 0 = main entry
+let entryState = { 0: { size:'', type:'', qty:'' } };
+
+// ── DATE ──
+function getTodayFormatted() {
+  const d = new Date();
+  return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
+}
+document.getElementById('today-display').textContent = getTodayFormatted();
+document.getElementById('header-date').textContent   = getTodayFormatted();
+
+// ── JAM BUTTONS ──
+const jamGrid = document.getElementById('jam-grid');
+for (let i = 1; i <= 11; i++) {
+  const b = document.createElement('div');
+  b.className = 'jam-btn'; b.textContent = `Ke-${i}`; b.dataset.jam = i;
+  b.onclick = () => {
+    document.querySelectorAll('.jam-btn').forEach(x => x.classList.remove('selected'));
+    b.classList.add('selected');
+    selectedJam = i;
+    document.getElementById('jam-error').classList.remove('show');
+    updatePreview();
+  };
+  jamGrid.appendChild(b);
+}
+
+// ── CHIP SELECT ──
+function selectChip(idx, type) {
+  entryState[idx] = entryState[idx] || {};
+  entryState[idx].type = type;
+  ['sewing','nologo'].forEach(t => {
+    const el = document.getElementById(`chip-${t}-${idx}`);
+    if (el) el.classList.toggle('selected', t === type);
+  });
+  const err = document.getElementById(`type-error-${idx}`);
+  if (err) err.classList.remove('show');
+  updatePreview();
+}
+
+// ── QTY SANITIZE ──
+function sanitizeQty(el) {
+  el.value = el.value.replace(/[^0-9]/g, '');
+  const idx = el.dataset.idx || 0;
+  entryState[idx] = entryState[idx] || {};
+  entryState[idx].qty = el.value;
+  updatePreview();
+}
+
+// ── TOGGLE EXTRA SIZES ──
+function toggleExtraSizes(on) {
+  const sec = document.getElementById('extra-sizes-section');
+  if (on) {
+    sec.classList.add('visible');
+    if (extraCount === 0) addSizeEntry();
+  } else {
+    sec.classList.remove('visible');
+    document.getElementById('extra-entries').innerHTML = '';
+    extraEntries = []; extraCount = 0;
+    // clean state keys > 0
+    Object.keys(entryState).forEach(k => { if (k > 0) delete entryState[k]; });
+    updatePreview();
+  }
+}
+
+function addSizeEntry() {
+  extraCount++;
+  const idx = extraCount; // 1,2,3...
+  entryState[idx] = { size:'', type:'', qty:'' };
+
+  const wrap = document.createElement('div');
+  wrap.className = 'size-entry'; wrap.id = `entry-${idx}`;
+  wrap.innerHTML = `
+    <div class="size-entry-header">
+      <span class="size-entry-label">Size ${idx + 1}</span>
+      <div class="size-entry-remove" onclick="removeSizeEntry(${idx})">×</div>
+    </div>
+    <div class="size-entry-fields">
+      <div class="autocomplete-wrap">
+        <input type="text" id="size-input-${idx}" class="field-input" placeholder="Pilih size..." autocomplete="off" style="font-size:13px;padding:8px 10px" />
+        <div class="dropdown-list" id="size-dropdown-${idx}"></div>
+      </div>
+      <div class="chip-row" style="margin-top:6px">
+        <div class="chip" id="chip-sewing-${idx}" onclick="selectChip(${idx},'sewing')" style="font-size:11px;padding:7px 4px">
+          🧵 Out Sewing<span class="chip-sub">Jahit selesai</span>
+        </div>
+        <div class="chip" id="chip-nologo-${idx}" onclick="selectChip(${idx},'nologo')" style="font-size:11px;padding:7px 4px">
+          📦 Out No Logo<span class="chip-sub">Tanpa logo</span>
+        </div>
+      </div>
+      <div class="error-msg" id="type-error-${idx}">Pilih jenis output.</div>
+      <div class="number-wrap" style="margin-top:6px">
+        <input type="number" id="qty-input-${idx}" class="number-input" placeholder="0" min="0" step="1" inputmode="numeric"
+          data-idx="${idx}" oninput="sanitizeQty(this)" style="font-size:16px;padding:8px 40px 8px 12px" />
+        <span class="unit-label">pcs</span>
+      </div>
+      <div class="error-msg" id="qty-error-${idx}">Masukkan jumlah yang valid.</div>
+    </div>`;
+  document.getElementById('extra-entries').appendChild(wrap);
+  setupExtraSizeAutocomplete(idx);
+  updatePreview();
+}
+
+function removeSizeEntry(idx) {
+  const el = document.getElementById(`entry-${idx}`);
+  if (el) el.remove();
+  delete entryState[idx];
+  updatePreview();
+}
+
+// ── AUTOCOMPLETE ENGINE ──
+function makeAutocomplete(inputId, dropdownId, getOptions, onSelect) {
+  const input    = document.getElementById(inputId);
+  const dropdown = document.getElementById(dropdownId);
+  if (!input || !dropdown) return;
+
+  function show() {
+    const q = input.value.trim().toLowerCase();
+    const opts = getOptions();
+    const filtered = q ? opts.filter(o => o.toLowerCase().includes(q)) : opts;
+    renderDropdown(dropdown, filtered, q, val => {
+      input.value = val; dropdown.classList.remove('open'); onSelect(val);
+    });
+    dropdown.classList.toggle('open', filtered.length > 0);
+  }
+  input.addEventListener('input', show);
+  input.addEventListener('focus', show);
+  document.addEventListener('click', e => {
+    if (!input.contains(e.target) && !dropdown.contains(e.target))
+      dropdown.classList.remove('open');
+  });
+}
+
+function renderDropdown(dropdown, items, q, onSelect) {
+  if (!items.length) { dropdown.innerHTML = '<div class="no-result">Tidak ada hasil</div>'; return; }
+  dropdown.innerHTML = items.slice(0,40).map(item => {
+    const hl = q ? item.replace(new RegExp(`(${escRe(q)})`, 'gi'), '<mark>$1</mark>') : item;
+    return `<div class="dropdown-item">${hl}</div>`;
+  }).join('');
+  dropdown.querySelectorAll('.dropdown-item').forEach((el, i) => {
+    el.addEventListener('mousedown', e => { e.preventDefault(); onSelect(items[i]); });
+  });
+}
+function escRe(s) { return s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'); }
+
+// ── LOAD DATA ──
+async function loadSheetData() {
+  showLoading('Memuat database...');
+  try {
+    const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID_READ}/gviz/tq?tqx=out:json&sheet=Sheet1`;
+    const res  = await fetch(url);
+    const text = await res.text();
+    const json = JSON.parse(text.substring(47, text.length - 2));
+    allData = json.table.rows.map(r => ({
+      line:  r.c[0]?.v ? String(r.c[0].v).trim() : '',
+      spo:   r.c[1]?.v ? String(r.c[1].v).trim() : '',
+      style: r.c[2]?.v ? String(r.c[2].v).trim() : '',
+      size:  r.c[3]?.v ? String(r.c[3].v).trim() : '',
+    })).filter(r => r.line || r.spo);
+    setupLineAutocomplete();
+    setupSPOAutocomplete();
+    setupMainSizeAutocomplete();
+  } catch(e) {
+    showToast('Gagal memuat database. Cek koneksi internet.', 'error');
+  } finally {
+    hideLoading();
+  }
+}
+
+// ── LINE ──
+function setupLineAutocomplete() {
+  const lines = [...new Set(allData.map(r => r.line).filter(Boolean))].sort();
+  makeAutocomplete('line-input','line-dropdown',
+    () => {
+      const q = document.getElementById('line-input').value.toLowerCase();
+      return q ? lines.filter(l => l.toLowerCase().includes(q)) : lines;
+    },
+    val => {
+      selectedLine = val; selectedSPO = ''; selectedStyle = '';
+      document.getElementById('spo-input').value = '';
+      document.getElementById('style-text').textContent = 'Terisi otomatis saat SPO dipilih';
+      document.getElementById('style-text').style.fontStyle = 'italic';
+      document.getElementById('style-text').style.color = '#777';
+      resetSizeInputs();
+      updatePreview();
+    }
+  );
+}
+
+// ── SPO ──
+function setupSPOAutocomplete() {
+  makeAutocomplete('spo-input','spo-dropdown',
+    () => {
+      const q = document.getElementById('spo-input').value.toLowerCase();
+      const spos = [...new Set(
+        allData.filter(r => !selectedLine || r.line === selectedLine)
+               .map(r => r.spo).filter(Boolean)
+      )].sort();
+      return q ? spos.filter(s => s.toLowerCase().includes(q)) : spos;
+    },
+    val => {
+      selectedSPO = val;
+      const match = allData.find(r =>
+        (!selectedLine || r.line === selectedLine) && r.spo === val
+      );
+      selectedStyle = match?.style || '';
+      const st = document.getElementById('style-text');
+      st.textContent = selectedStyle || 'Style tidak ditemukan';
+      st.style.fontStyle = selectedStyle ? 'normal' : 'italic';
+      st.style.color = selectedStyle ? '#0D47A1' : '#777';
+      resetSizeInputs();
+      document.getElementById('size-input').disabled = false;
+      document.getElementById('size-input').placeholder = 'Pilih size...';
+      updatePreview();
+    }
+  );
+}
+
+// ── MAIN SIZE ──
+function setupMainSizeAutocomplete() {
+  makeAutocomplete('size-input','size-dropdown',
+    () => {
+      const q = document.getElementById('size-input').value.toLowerCase();
+      if (!selectedLine || !selectedSPO) return [];
+      const sizes = [...new Set(
+        allData.filter(r => r.line === selectedLine && r.spo === selectedSPO)
+               .map(r => r.size).filter(Boolean)
+      )].sort();
+      return q ? sizes.filter(s => s.toLowerCase().includes(q)) : sizes;
+    },
+    val => {
+      entryState[0] = entryState[0] || {};
+      entryState[0].size = val;
+      document.getElementById('size-error').classList.remove('show');
+      updatePreview();
+    }
+  );
+  document.getElementById('size-input').addEventListener('focus', () => {
+    if (!selectedLine || !selectedSPO)
+      document.getElementById('size-error').classList.add('show');
+  });
+}
+
+// ── EXTRA SIZE AUTOCOMPLETE ──
+function setupExtraSizeAutocomplete(idx) {
+  makeAutocomplete(`size-input-${idx}`, `size-dropdown-${idx}`,
+    () => {
+      const q = document.getElementById(`size-input-${idx}`)?.value.toLowerCase() || '';
+      if (!selectedLine || !selectedSPO) return [];
+      const sizes = [...new Set(
+        allData.filter(r => r.line === selectedLine && r.spo === selectedSPO)
+               .map(r => r.size).filter(Boolean)
+      )].sort();
+      return q ? sizes.filter(s => s.toLowerCase().includes(q)) : sizes;
+    },
+    val => {
+      entryState[idx] = entryState[idx] || {};
+      entryState[idx].size = val;
+      updatePreview();
+    }
+  );
+}
+
+function resetSizeInputs() {
+  const si = document.getElementById('size-input');
+  si.value = ''; si.disabled = true;
+  si.placeholder = 'Pilih Line & SPO dulu...';
+  entryState[0] = { size:'', type: entryState[0]?.type||'', qty: entryState[0]?.qty||'' };
+}
+
+// ── PREVIEW ──
+function updatePreview() {
+  const card = document.getElementById('preview-card');
+  const es0  = entryState[0] || {};
+  const qty0 = document.getElementById('qty-input-0')?.value || '';
+  es0.qty = qty0;
+
+  const mainOk = selectedLine && selectedSPO && selectedStyle && selectedJam &&
+                 es0.size && es0.type && qty0;
+  if (!mainOk) { card.style.display = 'none'; return; }
+
+  let rows = `
+    <div class="preview-row"><span class="preview-key">Tanggal</span><span class="preview-val">${getTodayFormatted()}</span></div>
+    <div class="preview-row"><span class="preview-key">Jam ke-</span><span class="preview-val">${selectedJam}</span></div>
+    <div class="preview-row"><span class="preview-key">Line</span><span class="preview-val">${selectedLine}</span></div>
+    <div class="preview-row"><span class="preview-key">SPO</span><span class="preview-val">${selectedSPO}</span></div>
+    <div class="preview-row"><span class="preview-key">Style</span><span class="preview-val">${selectedStyle}</span></div>
+    <div class="preview-row"><span class="preview-key">Size</span><span class="preview-val">${es0.size}</span></div>
+    <div class="preview-row"><span class="preview-key">Jenis</span><span class="preview-val">${es0.type==='sewing'?'Out Sewing':'Out No Logo'}</span></div>
+    <div class="preview-row"><span class="preview-key">Qty</span><span class="preview-val">${qty0} pcs</span></div>`;
+
+  // Extra entries
+  Object.entries(entryState).forEach(([k, st]) => {
+    if (k == 0) return;
+    const qEl = document.getElementById(`qty-input-${k}`);
+    const q   = qEl?.value || '';
+    if (st.size && st.type && q) {
+      rows += `<div class="divider"></div>
+        <div class="preview-row"><span class="preview-key">Size ${Number(k)+1}</span><span class="preview-val">${st.size}</span></div>
+        <div class="preview-row"><span class="preview-key">Jenis</span><span class="preview-val">${st.type==='sewing'?'Out Sewing':'Out No Logo'}</span></div>
+        <div class="preview-row"><span class="preview-key">Qty</span><span class="preview-val">${q} pcs</span></div>`;
+    }
+  });
+
+  document.getElementById('preview-content').innerHTML = rows;
+  card.style.display = 'block';
+}
+
+// ── SUBMIT ──
+async function submitData() {
+  let valid = true;
+
+  if (!selectedLine || !selectedSPO) { valid = false; showToast('Pilih Line dan SPO.','error'); return; }
+  if (!selectedJam)  { document.getElementById('jam-error').classList.add('show'); valid = false; }
+
+  const es0  = entryState[0] || {};
+  const qty0 = document.getElementById('qty-input-0').value;
+  if (!es0.size)  { document.getElementById('size-error').classList.add('show'); valid = false; }
+  if (!es0.type)  { document.getElementById('type-error-0').classList.add('show'); valid = false; }
+  if (!qty0 || parseInt(qty0) <= 0) { document.getElementById('qty-error-0').classList.add('show'); valid = false; }
+
+  if (!valid) { showToast('Lengkapi semua field terlebih dahulu.','error'); return; }
+
+  // Build rows to send
+  const rows = [];
+  const pushRow = (size, type, qty) => {
+    rows.push({
+      tanggal:   getTodayFormatted(),
+      jamKe:     selectedJam,
+      line:      selectedLine,
+      spo:       selectedSPO,
+      size:      size,
+      outSewing: type === 'sewing' ? qty : '',
+      outNoLogo: type === 'nologo' ? qty : '',
+    });
+  };
+  pushRow(es0.size, es0.type, qty0);
+
+  Object.entries(entryState).forEach(([k, st]) => {
+    if (k == 0) return;
+    const q = document.getElementById(`qty-input-${k}`)?.value || '';
+    if (st.size && st.type && q) pushRow(st.size, st.type, q);
+  });
+
+  showLoading('Mengirim data...');
+  let successCount = 0;
+  try {
+    for (const row of rows) {
+      const fd = new FormData();
+      Object.entries({ ...row, sheetId: SHEET_ID_WRITE }).forEach(([k,v]) => fd.append(k,v));
+      const res    = await fetch(GAS_URL, { method:'POST', body: fd });
+      const result = await res.json();
+      if (result.status === 'ok') successCount++;
+      else throw new Error(result.message || 'Error');
+    }
+    showToast(`✓ ${successCount} data berhasil disimpan!`, 'success');
+    resetForm();
+  } catch(e) {
+    if (successCount > 0)
+      showToast(`${successCount} tersimpan, sebagian gagal. Cek GAS URL.`, 'error');
+    else
+      showToast('Hubungkan Google Apps Script terlebih dahulu.', 'error');
+  } finally {
+    hideLoading();
+  }
+}
+
+function resetForm() {
+  selectedLine=''; selectedSPO=''; selectedStyle=''; selectedJam=null;
+  ['line-input','spo-input'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('style-text').textContent = 'Terisi otomatis saat SPO dipilih';
+  document.getElementById('style-text').style.fontStyle = 'italic';
+  document.getElementById('style-text').style.color = '#777';
+  document.getElementById('size-input').value = '';
+  document.getElementById('size-input').disabled = true;
+  document.getElementById('size-input').placeholder = 'Pilih Line & SPO dulu...';
+  document.getElementById('qty-input-0').value = '';
+  document.querySelectorAll('.jam-btn').forEach(b => b.classList.remove('selected'));
+  ['chip-sewing-0','chip-nologo-0'].forEach(id => document.getElementById(id)?.classList.remove('selected'));
+  entryState = { 0: { size:'', type:'', qty:'' } };
+  document.getElementById('toggle-extra').checked = false;
+  toggleExtraSizes(false);
+  document.getElementById('preview-card').style.display = 'none';
+}
+
+// ── HELPERS ──
+function showLoading(t) {
+  document.getElementById('loading-text').textContent = t;
+  document.getElementById('loading').classList.add('visible');
+}
+function hideLoading() { document.getElementById('loading').classList.remove('visible'); }
+function showToast(msg, type) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.className = `toast ${type} show`;
+  setTimeout(() => t.classList.remove('show'), 3500);
+}
+
+// ── INIT ──
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('qty-input-0').dataset.idx = 0;
+  loadSheetData();
+});
+</script>
+</body>
+</html>
