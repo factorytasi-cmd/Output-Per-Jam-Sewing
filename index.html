@@ -359,7 +359,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 
 <script>
 const SHEET_ID_WRITE = '1m_OxSQHVUa7IC6r6e_EXGBFj5NBVq67JPDmAPs8HB5E';
-const GAS_URL = 'https://script.google.com/macros/s/AKfycbw3Ob3p5UVFM8O6rSDMz_7KNN3ICVhWiXO8ftSo-rrA_RpCFzo8g5QKLFa2JZbkf6-o/exec';
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbz2r-ACgSbzAGZctkCr-dLoxo2jiq9965WXenWbzN6Ym6M1TwPjlMv80o7L48qOKX-N/exec';
 
 let allData      = [];
 let selectedLine = '';
@@ -536,11 +536,11 @@ function makeAC(inputId, dropdownId, getOpts, onSelect) {
 function escRe(s){ return s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'); }
 
 // ── LOAD DATA ──
-const CACHE_KEY     = 'litra_db_v2';
-const CACHE_TTL     = 60 * 60 * 1000; // 1 jam dalam ms
+const CACHE_KEY = 'litra_db_v3';
+const CACHE_TTL = 60 * 60 * 1000; // 1 jam
 
-async function loadSheetData() {
-  // ── Coba ambil dari cache dulu ──
+function loadSheetData() {
+  // Cek cache dulu
   try {
     const raw = localStorage.getItem(CACHE_KEY);
     if (raw) {
@@ -550,35 +550,65 @@ async function loadSheetData() {
         setupLineAC();
         setupSPOAC();
         setupMainSizeAC();
-        // Refresh di background tanpa loading screen
-        fetchAndCache(false);
+        // Refresh background pakai JSONP tanpa loading
+        _fetchJSONP(false);
         return;
       }
     }
   } catch(e) {}
-
-  // ── Tidak ada cache / expired, tarik dari GAS ──
-  await fetchAndCache(true);
+  // Cache kosong/expired — form langsung muncul, data menyusul
+  _fetchJSONP(true);
 }
 
-async function fetchAndCache(showLoader) {
+function _fetchJSONP(showLoader) {
   if (showLoader) showLoading('Memuat database...');
-  try {
-    const url  = GAS_URL + '?type=litra';
-    const res  = await fetch(url);
-    const json = await res.json();
-    if (json.status !== 'ok') throw new Error('GAS error');
-    allData = json.rows.filter(r => r.line || r.spo);
-    // Simpan ke cache
-    localStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), rows: allData }));
-    setupLineAC();
-    setupSPOAC();
-    setupMainSizeAC();
-  } catch(e) {
-    if (showLoader) showToast('Gagal memuat database. Cek koneksi.', 'error');
-  } finally {
+
+  const cbName = '__litraCallback_' + Date.now();
+
+  const timer = setTimeout(() => {
+    _cleanupJSONP(cbName);
+    if (showLoader) {
+      hideLoading();
+      showToast('Timeout — coba refresh halaman.', 'error');
+    }
+  }, 15000);
+
+  window[cbName] = function(json) {
+    clearTimeout(timer);
+    _cleanupJSONP(cbName);
     if (showLoader) hideLoading();
-  }
+    if (json.status === 'ok' && json.rows) {
+      allData = json.rows.filter(r => r.line || r.spo);
+      try {
+        localStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), rows: allData }));
+      } catch(e) {}
+      setupLineAC();
+      setupSPOAC();
+      setupMainSizeAC();
+      if (showLoader) showToast('Database dimuat (' + allData.length + ' data)', 'success');
+    } else if (showLoader) {
+      showToast('Gagal memuat database.', 'error');
+    }
+  };
+
+  const script = document.createElement('script');
+  script.id  = 'jsonp-litra-' + cbName;
+  script.src = GAS_URL + '?type=litra&callback=' + cbName;
+  script.onerror = () => {
+    clearTimeout(timer);
+    _cleanupJSONP(cbName);
+    if (showLoader) {
+      hideLoading();
+      showToast('Gagal koneksi ke server.', 'error');
+    }
+  };
+  document.head.appendChild(script);
+}
+
+function _cleanupJSONP(cbName) {
+  delete window[cbName];
+  const el = document.getElementById('jsonp-litra-' + cbName);
+  if (el) el.remove();
 }
 
 // ── LINE ──
