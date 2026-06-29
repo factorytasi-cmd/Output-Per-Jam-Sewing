@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0A1A1D">
+<title>LITRA-ASI — Output Produksi</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#0A1A1D;min-height:100vh;display:flex;align-items:flex-start;justify-content:center;padding:0 0 40px}
+.phone{width:100%;max-width:420px;background:#0A1A1D}
+
+/* HEADER */
+.header-zone{background:#0A1A1D;padding:16px 22px 28px}
+.status-bar{display:flex;justify-content:space-between;margin-bottom:24px;font-size:11px;color:rgba(255,255,255,0.35);letter-spacing:.5px}
+.logo-wrap{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:8px}
+.logo-box{width:44px;height:44px;border-radius:14px;background:linear-gradient(135deg,#378ADD,#1D9E75);display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:800;color:white;flex-shrink:0}
+.logo-text{font-size:26px;font-weight:700;color:white;letter-spacing:1.5px}
+.tagline{text-align:center;font-size:9px;color:#5DCAA5;letter-spacing:3px;text-transform:uppercase;margin-bottom:4px}
+.subtitle{text-align:center;font-size:10px;color:rgba(255,255,255,0.28);margin-bottom:18px;line-height:1.4}
+.date-pill{display:flex;justify-content:center}
+.date-pill span{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,0.06);border:.5px solid rgba(255,255,255,0.12);border-radius:99px;padding:6px 16px;font-size:11px;color:rgba(255,255,255,0.5)}
+.page-title-bar{background:#0A1A1D;padding:0 22px 20px;text-align:center}
+.page-title-bar h1{font-size:18px;font-weight:700;color:white;letter-spacing:1px}
+.page-divider{width:40px;height:2px;background:linear-gradient(90deg,#378ADD,#1D9E75);border-radius:99px;margin:8px auto 0}
+
+/* STATUS BANNER */
+.status-banner{margin:0 18px 12px;border-radius:14px;padding:11px 14px;display:flex;align-items:center;gap:10px;font-size:12px;font-weight:500;display:none}
+.status-banner.show{display:flex}
+.status-banner.info{background:rgba(55,138,221,0.1);border:.5px solid rgba(55,138,221,0.25);color:#134E8A}
+.status-banner.done{background:rgba(29,158,117,0.1);border:.5px solid rgba(29,158,117,0.25);color:#0A5C42}
+.status-banner.failed{background:rgba(220,53,69,0.08);border:.5px solid rgba(220,53,69,0.25);color:#9B1C1C}
+.banner-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.info .banner-dot{background:#378ADD;animation:pulse 0.8s infinite}
+.done .banner-dot{background:#1D9E75}
+.failed .banner-dot{background:#DC3545}
+
+/* CONTENT */
+.content-zone{background:#F0F2F1;padding:20px 18px 28px;margin-top:12px}
+.section-lbl{font-size:10px;color:#999;letter-spacing:2px;text-transform:uppercase;margin-bottom:16px}
+
+/* CARDS */
+.form-card{background:white;border-radius:20px;border:.5px solid rgba(0,0,0,0.08);margin-bottom:16px;overflow:hidden}
+.form-card-header{background:rgba(29,158,117,0.07);padding:14px 18px;display:flex;align-items:center;gap:8px;border-bottom:.5px solid rgba(29,158,117,0.12)}
+.card-step-dot{width:8px;height:8px;border-radius:50%;background:linear-gradient(135deg,#378ADD,#1D9E75);flex-shrink:0}
+.card-title-text{font-size:12px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:#0A5C42}
+.form-card-body{padding:18px}
+
+/* FIELD */
+.field{margin-bottom:14px}
+.field:last-child{margin-bottom:0}
+.field-label{font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:#999;margin-bottom:6px;display:flex;align-items:center;gap:5px}
+.field-label i{color:#1D9E75;font-size:13px}
+.field-input{width:100%;padding:11px 14px;border-radius:12px;border:1.5px solid #E5E7E6;font-size:14px;color:#111;background:#FAFAFA;outline:none;transition:border-color .15s,background .15s;font-family:inherit;appearance:none}
+.field-input:focus{border-color:#1D9E75;background:white}
+.field-input:disabled{background:#F0F2F1;color:#aaa;border-color:transparent;cursor:not-allowed}
+.field-input::placeholder{color:#BBB}
+.field-filled{background:#F0FBF7;border:1.5px solid rgba(29,158,117,0.3);border-radius:12px;padding:11px 14px;font-size:14px;color:#0A5C42;font-weight:500;display:flex;align-items:center;gap:6px;min-height:44px}
+
+/* AUTOCOMPLETE */
+.ac-wrap{position:relative}
+.ac-drop{position:absolute;top:calc(100% + 4px);left:0;right:0;background:white;border-radius:14px;border:1.5px solid #E5E7E6;z-index:100;max-height:200px;overflow-y:auto;box-shadow:0 8px 24px rgba(0,0,0,0.12);display:none}
+.ac-drop.open{display:block}
+.ac-item{padding:11px 14px;cursor:pointer;font-size:13px;color:#111;border-bottom:.5px solid #F0F2F1;transition:background .1s}
+.ac-item:last-child{border-bottom:none}
+.ac-item:hover{background:#F0FBF7}
+.ac-item mark{background:none;color:#1D9E75;font-weight:700}
+.ac-empty{padding:12px 14px;font-size:13px;color:#999;text-align:center}
+
+/* JAM GRID */
+.jam-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}
+.jam-btn{padding:9px 4px;border-radius:12px;border:1.5px solid #E5E7E6;background:#FAFAFA;font-size:13px;font-weight:600;color:#555;cursor:pointer;text-align:center;transition:all .15s;user-select:none;font-family:inherit}
+.jam-btn:hover{border-color:#1D9E75;color:#0A5C42;background:#F0FBF7}
+.jam-btn.selected{background:linear-gradient(135deg,#378ADD,#1D9E75);color:white;border-color:transparent}
+
+/* OUTPUT TYPE CHIPS */
+.chip-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.chip{padding:12px 8px;border-radius:12px;border:1.5px solid #E5E7E6;background:#FAFAFA;text-align:center;cursor:pointer;transition:all .15s;user-select:none}
+.chip-icon{font-size:20px;margin-bottom:3px}
+.chip-label{font-size:12px;font-weight:700;color:#555;display:block}
+.chip-sub{font-size:10px;color:#999;display:block;margin-top:1px}
+.chip:hover{border-color:#1D9E75;background:#F0FBF7}
+.chip:hover .chip-label{color:#0A5C42}
+.chip.selected{background:rgba(29,158,117,0.08);border-color:rgba(29,158,117,0.4)}
+.chip.selected .chip-label{color:#0A5C42}
+
+/* NUMBER INPUT */
+.number-wrap{position:relative}
+.number-input{width:100%;padding:11px 44px 11px 14px;border-radius:12px;border:1.5px solid #E5E7E6;font-size:20px;font-weight:700;color:#0A5C42;background:#FAFAFA;outline:none;transition:border-color .15s;font-family:inherit;-moz-appearance:textfield}
+.number-input::-webkit-inner-spin-button,.number-input::-webkit-outer-spin-button{-webkit-appearance:none}
+.number-input:focus{border-color:#1D9E75;background:white}
+.unit-label{position:absolute;right:14px;top:50%;transform:translateY(-50%);font-size:11px;font-weight:600;color:#999;pointer-events:none}
+
+/* TOGGLE */
+.toggle-row{display:flex;align-items:center;gap:12px;padding:4px 0}
+.toggle-wrap{position:relative;width:44px;height:24px;flex-shrink:0}
+.toggle-wrap input{opacity:0;width:0;height:0;position:absolute}
+.toggle-slider{position:absolute;inset:0;background:#ddd;border-radius:24px;cursor:pointer;transition:background .2s}
+.toggle-slider::after{content:'';position:absolute;width:18px;height:18px;border-radius:50%;background:#fff;top:3px;left:3px;transition:transform .2s}
+.toggle-wrap input:checked + .toggle-slider{background:#1D9E75}
+.toggle-wrap input:checked + .toggle-slider::after{transform:translateX(20px)}
+.toggle-text{font-size:13px;font-weight:600;color:#333}
+.toggle-sub{font-size:11px;color:#999;display:block;margin-top:1px}
+
+/* EXTRA SIZE ENTRIES */
+.extra-entry{background:#F0FBF7;border:.5px solid rgba(29,158,117,0.2);border-radius:14px;padding:14px;margin-top:10px}
+.extra-entry-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.extra-entry-label{font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#0A5C42}
+.remove-btn{background:rgba(220,53,69,0.1);border:none;border-radius:8px;color:#dc3545;padding:5px 8px;cursor:pointer;display:flex;align-items:center;gap:4px;font-size:11px;font-weight:500;font-family:inherit}
+
+/* DIVIDER */
+.divider{height:.5px;background:#E5E7E6;margin:14px 0}
+
+/* ADD SIZE BUTTON */
+.add-size-btn{width:100%;padding:13px;border-radius:14px;border:1.5px dashed rgba(29,158,117,0.4);background:rgba(29,158,117,0.04);color:#0A5C42;font-size:13px;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .15s;margin-top:10px;font-family:inherit}
+.add-size-btn:active{background:rgba(29,158,117,0.1);transform:scale(0.98)}
+
+/* PREVIEW */
+.preview-row{display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:.5px solid #F0F2F1;font-size:12px}
+.preview-row:last-child{border-bottom:none}
+.preview-key{color:#999}
+.preview-val{font-weight:600;color:#111;text-align:right;max-width:60%}
+
+/* SUBMIT */
+.submit-btn{width:100%;padding:16px;border-radius:16px;border:none;background:linear-gradient(135deg,#1D9E75,#378ADD);color:white;font-size:15px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:opacity .15s,transform .1s;letter-spacing:.3px;font-family:inherit;margin-top:4px}
+.submit-btn:active{transform:scale(0.98);opacity:.9}
+.submit-btn:disabled{opacity:.45;cursor:not-allowed}
+
+/* ERROR */
+.error-msg{font-size:11px;color:#9B1C1C;margin-top:4px;display:none}
+.error-msg.show{display:block}
+
+/* TOAST */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:#111;color:white;padding:12px 20px;border-radius:14px;font-size:13px;font-weight:500;z-index:999;transition:transform .3s cubic-bezier(.34,1.56,.64,1);white-space:nowrap;display:flex;align-items:center;gap:8px;max-width:340px}
+.toast.show{transform:translateX(-50%) translateY(0)}
+.toast.success{background:#0A5C42}
+.toast.error{background:#9B1C1C}
+.toast.info{background:#134E8A}
+
+/* LOADING */
+.loading-overlay{display:none;position:fixed;inset:0;background:rgba(10,26,29,0.75);z-index:500;align-items:center;justify-content:center;flex-direction:column;gap:16px}
+.loading-overlay.show{display:flex}
+.spinner{width:40px;height:40px;border:3px solid rgba(29,158,117,0.2);border-top-color:#1D9E75;border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-text{color:white;font-size:13px;opacity:.7}
+
+/* FOOTER */
+.footer-zone{background:#0A1A1D;padding:16px 18px 28px}
+.live-row{display:flex;align-items:center;justify-content:center;gap:8px}
+.live-dot{width:6px;height:6px;border-radius:50%;background:#1D9E75;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.live-txt{font-size:11px;color:rgba(255,255,255,0.3)}
+
+#extra-sizes-section{display:none}
+#extra-sizes-section.visible{display:block}
+
+@media(max-width:420px){
+  body{padding:0}
+  .phone{min-height:100vh}
+  .header-zone{padding-top:env(safe-area-inset-top,20px)}
+  .footer-zone{padding-bottom:env(safe-area-inset-bottom,28px)}
+}
+</style>
+</head>
+<body>
+<div class="phone">
+
+  <!-- HEADER -->
+  <div class="header-zone">
+    <div class="status-bar">
+      <span>PT. ASI</span>
+      <span id="waktu">--:--</span>
+    </div>
+    <div class="logo-wrap">
+      <div class="logo-box">L</div>
+      <div class="logo-text">LITRA-ASI</div>
+    </div>
+    <div class="tagline">Leading Industrial Transformation</div>
+    <div class="subtitle">Lean Intelligence Tracking &amp; Realtime Analytics — ASI</div>
+    <div class="date-pill">
+      <span>
+        <i class="ti ti-calendar" style="font-size:13px"></i>
+        <span id="tgl">Memuat...</span>
+      </span>
+    </div>
+  </div>
+
+  <div class="page-title-bar">
+    <h1>OUTPUT PRODUKSI</h1>
+    <div class="page-divider"></div>
+  </div>
+
+  <!-- STATUS BANNER -->
+  <div class="status-banner" id="status-banner">
+    <div class="banner-dot"></div>
+    <span id="banner-text"></span>
+  </div>
+
+  <!-- CONTENT -->
+  <div class="content-zone">
+    <div class="section-lbl">
+      <i class="ti ti-clipboard-data" style="font-size:12px;vertical-align:-1px"></i>
+      Input Output Per Jam
+    </div>
+
+    <!-- CARD 1: LINE & SPO -->
+    <div class="form-card">
+      <div class="form-card-header">
+        <div class="card-step-dot"></div>
+        <span class="card-title-text">Line &amp; SPO</span>
+      </div>
+      <div class="form-card-body">
+        <div class="field">
+          <div class="field-label"><i class="ti ti-layout-rows"></i>Line Produksi</div>
+          <div class="ac-wrap">
+            <input type="text" id="line-input" class="field-input" placeholder="Ketik nama line..." autocomplete="off" />
+            <div class="ac-drop" id="line-dropdown"></div>
+          </div>
+        </div>
+        <div class="field">
+          <div class="field-label"><i class="ti ti-file-text"></i>SPO / Order</div>
+          <div class="ac-wrap">
+            <input type="text" id="spo-input" class="field-input" placeholder="Ketik SPO..." autocomplete="off" />
+            <div class="ac-drop" id="spo-dropdown"></div>
+          </div>
+        </div>
+        <div class="field">
+          <div class="field-label"><i class="ti ti-tag"></i>Style</div>
+          <div class="field-filled" id="style-display">
+            <i class="ti ti-info-circle" style="color:#999;font-size:14px"></i>
+            <span id="style-text" style="color:#999;font-style:italic;font-size:13px">Terisi otomatis saat SPO dipilih</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CARD 2: JAM -->
+    <div class="form-card">
+      <div class="form-card-header">
+        <div class="card-step-dot"></div>
+        <span class="card-title-text">Jam Ke-</span>
+      </div>
+      <div class="form-card-body">
+        <div class="jam-grid" id="jam-grid"></div>
+        <div class="error-msg" id="jam-error">Pilih jam terlebih dahulu.</div>
+      </div>
+    </div>
+
+    <!-- CARD 3: SIZE + OUTPUT + QTY -->
+    <div class="form-card">
+      <div class="form-card-header">
+        <div class="card-step-dot"></div>
+        <span class="card-title-text">Size, Output &amp; Qty</span>
+      </div>
+      <div class="form-card-body">
+
+        <!-- MAIN ENTRY -->
+        <div class="field">
+          <div class="field-label"><i class="ti ti-ruler"></i>Size</div>
+          <div class="ac-wrap">
+            <input type="text" id="size-input" class="field-input" placeholder="Pilih Line &amp; SPO dulu..." autocomplete="off" disabled />
+            <div class="ac-drop" id="size-dropdown"></div>
+          </div>
+          <div class="error-msg" id="size-error">Pilih Line dan SPO terlebih dahulu.</div>
+        </div>
+
+        <div class="field">
+          <div class="field-label"><i class="ti ti-activity"></i>Jenis Output</div>
+          <div class="chip-row">
+            <div class="chip" id="chip-sewing-0" onclick="selectChip(0,'sewing')">
+              <div class="chip-icon">🧵</div>
+              <span class="chip-label">Out Sewing</span>
+              <span class="chip-sub">Jahit selesai</span>
+            </div>
+            <div class="chip" id="chip-nologo-0" onclick="selectChip(0,'nologo')">
+              <div class="chip-icon">📦</div>
+              <span class="chip-label">Out No Logo</span>
+              <span class="chip-sub">Tanpa logo</span>
+            </div>
+          </div>
+          <div class="error-msg" id="type-error-0">Pilih jenis output.</div>
+        </div>
+
+        <div class="field">
+          <div class="field-label"><i class="ti ti-number"></i>Jumlah Output (pcs)</div>
+          <div class="number-wrap">
+            <input type="number" id="qty-input-0" class="number-input" placeholder="0" min="0" step="1" inputmode="numeric" data-idx="0" oninput="sanitizeQty(this)" />
+            <span class="unit-label">pcs</span>
+          </div>
+          <div class="error-msg" id="qty-error-0">Masukkan jumlah yang valid.</div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- TOGGLE TAMBAH SIZE -->
+        <div class="toggle-row">
+          <label class="toggle-wrap">
+            <input type="checkbox" id="toggle-extra" onchange="toggleExtraSizes(this.checked)" />
+            <span class="toggle-slider"></span>
+          </label>
+          <div>
+            <span class="toggle-text">Tambah Size?</span>
+            <span class="toggle-sub">Input beberapa size sekaligus</span>
+          </div>
+        </div>
+
+        <!-- EXTRA SIZES -->
+        <div id="extra-sizes-section">
+          <div id="extra-entries"></div>
+          <button class="add-size-btn" onclick="addSizeEntry()">
+            <i class="ti ti-plus" style="font-size:16px"></i> Tambah Size
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- PREVIEW CARD -->
+    <div class="form-card" id="preview-card" style="display:none">
+      <div class="form-card-header">
+        <div class="card-step-dot"></div>
+        <span class="card-title-text">Ringkasan</span>
+      </div>
+      <div class="form-card-body">
+        <div id="preview-content"></div>
+      </div>
+    </div>
+
+    <!-- SUBMIT -->
+    <button class="submit-btn" id="submit-btn" onclick="submitData()">
+      <i class="ti ti-send" style="font-size:18px"></i>
+      Kirim Data Output
+    </button>
+
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer-zone">
+    <div class="live-row">
+      <div class="live-dot"></div>
+      <div class="live-txt">Sistem aktif — PT. ASI Sewing Division</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- LOADING -->
+<div class="loading-overlay" id="loading">
+  <div class="spinner"></div>
+  <div class="loading-text" id="loading-text">Memuat data...</div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+const SHEET_ID_WRITE = '1m_OxSQHVUa7IC6r6e_EXGBFj5NBVq67JPDmAPs8HB5E';
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbz2r-ACgSbzAGZctkCr-dLoxo2jiq9965WXenWbzN6Ym6M1TwPjlMv80o7L48qOKX-N/exec';
+
+let allData      = [];
+let selectedLine = '';
+let selectedSPO  = '';
+let selectedStyle= '';
+let selectedJam  = null;
+let entryState   = { 0: { size:'', type:'', qty:'' } };
+let extraCount   = 0;
+
+// ── CLOCK ──
+function updateClock() {
+  const n = new Date();
+  document.getElementById('waktu').textContent =
+    n.getHours().toString().padStart(2,'0') + ':' + n.getMinutes().toString().padStart(2,'0');
+  const days   = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+  const months = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+  document.getElementById('tgl').textContent =
+    days[n.getDay()] + ', ' + n.getDate() + ' ' + months[n.getMonth()] + ' ' + n.getFullYear();
+}
+updateClock();
+setInterval(updateClock, 30000);
+
+function getTodayFormatted() {
+  const d = new Date();
+  return String(d.getMonth()+1).padStart(2,'0') + '/' +
+         String(d.getDate()).padStart(2,'0') + '/' + d.getFullYear();
+}
+
+// ── BANNER ──
+function setBanner(type, msg) {
+  const b = document.getElementById('status-banner');
+  const t = document.getElementById('banner-text');
+  b.className = 'status-banner';
+  if (!type) { b.style.display='none'; return; }
+  b.classList.add('show', type);
+  t.textContent = msg;
+}
+
+// ── JAM BUTTONS ──
+const jamGrid = document.getElementById('jam-grid');
+for (let i = 1; i <= 11; i++) {
+  const b = document.createElement('button');
+  b.className = 'jam-btn'; b.textContent = 'Ke-'+i;
+  b.onclick = () => {
+    document.querySelectorAll('.jam-btn').forEach(x => x.classList.remove('selected'));
+    b.classList.add('selected');
+    selectedJam = i;
+    document.getElementById('jam-error').classList.remove('show');
+    updatePreview();
+  };
+  jamGrid.appendChild(b);
+}
+
+// ── CHIP SELECT ──
+function selectChip(idx, type) {
+  entryState[idx] = entryState[idx] || {};
+  entryState[idx].type = type;
+  ['sewing','nologo'].forEach(t => {
+    const el = document.getElementById('chip-'+t+'-'+idx);
+    if (el) el.classList.toggle('selected', t === type);
+  });
+  const err = document.getElementById('type-error-'+idx);
+  if (err) err.classList.remove('show');
+  updatePreview();
+}
+
+// ── QTY SANITIZE ──
+function sanitizeQty(el) {
+  el.value = el.value.replace(/[^0-9]/g, '');
+  const idx = el.dataset.idx || 0;
+  entryState[idx] = entryState[idx] || {};
+  entryState[idx].qty = el.value;
+  updatePreview();
+}
+
+// ── TOGGLE EXTRA ──
+function toggleExtraSizes(on) {
+  const sec = document.getElementById('extra-sizes-section');
+  if (on) {
+    sec.classList.add('visible');
+    if (extraCount === 0) addSizeEntry();
+  } else {
+    sec.classList.remove('visible');
+    document.getElementById('extra-entries').innerHTML = '';
+    extraCount = 0;
+    Object.keys(entryState).forEach(k => { if (k > 0) delete entryState[k]; });
+    updatePreview();
+  }
+}
+
+function addSizeEntry() {
+  extraCount++;
+  const idx = extraCount;
+  entryState[idx] = { size:'', type:'', qty:'' };
+  const wrap = document.createElement('div');
+  wrap.className = 'extra-entry'; wrap.id = 'entry-'+idx;
+  wrap.innerHTML = `
+    <div class="extra-entry-header">
+      <span class="extra-entry-label">Size ${idx+1}</span>
+      <button class="remove-btn" onclick="removeSizeEntry(${idx})">
+        <i class="ti ti-x" style="font-size:12px"></i> Hapus
+      </button>
+    </div>
+    <div class="field">
+      <div class="field-label"><i class="ti ti-ruler"></i>Size</div>
+      <div class="ac-wrap">
+        <input type="text" id="size-input-${idx}" class="field-input" placeholder="Pilih size..." autocomplete="off" style="font-size:13px" />
+        <div class="ac-drop" id="size-dropdown-${idx}"></div>
+      </div>
+    </div>
+    <div class="field">
+      <div class="field-label"><i class="ti ti-activity"></i>Jenis Output</div>
+      <div class="chip-row">
+        <div class="chip" id="chip-sewing-${idx}" onclick="selectChip(${idx},'sewing')">
+          <div class="chip-icon" style="font-size:16px">🧵</div>
+          <span class="chip-label" style="font-size:11px">Out Sewing</span>
+        </div>
+        <div class="chip" id="chip-nologo-${idx}" onclick="selectChip(${idx},'nologo')">
+          <div class="chip-icon" style="font-size:16px">📦</div>
+          <span class="chip-label" style="font-size:11px">Out No Logo</span>
+        </div>
+      </div>
+      <div class="error-msg" id="type-error-${idx}">Pilih jenis output.</div>
+    </div>
+    <div class="field">
+      <div class="field-label"><i class="ti ti-number"></i>Jumlah (pcs)</div>
+      <div class="number-wrap">
+        <input type="number" id="qty-input-${idx}" class="number-input" placeholder="0" min="0" step="1" inputmode="numeric"
+          data-idx="${idx}" oninput="sanitizeQty(this)" style="font-size:16px" />
+        <span class="unit-label">pcs</span>
+      </div>
+      <div class="error-msg" id="qty-error-${idx}">Masukkan jumlah yang valid.</div>
+    </div>`;
+  document.getElementById('extra-entries').appendChild(wrap);
+  setupExtraSizeAC(idx);
+  updatePreview();
+}
+
+function removeSizeEntry(idx) {
+  const el = document.getElementById('entry-'+idx);
+  if (el) el.remove();
+  delete entryState[idx];
+  updatePreview();
+}
+
+// ── AUTOCOMPLETE ENGINE ──
+function makeAC(inputId, dropdownId, getOpts, onSelect) {
+  const input = document.getElementById(inputId);
+  const drop  = document.getElementById(dropdownId);
+  if (!input || !drop) return;
+  function show() {
+    const q = input.value.trim().toLowerCase();
+    const opts = getOpts();
+    const filtered = q ? opts.filter(o => o.toLowerCase().includes(q)) : opts;
+    if (!filtered.length) {
+      drop.innerHTML = '<div class="ac-empty">Tidak ada hasil</div>';
+    } else {
+      drop.innerHTML = filtered.slice(0,40).map(item => {
+        const hl = q ? item.replace(new RegExp('('+escRe(q)+')','gi'),'<mark>$1</mark>') : item;
+        return '<div class="ac-item">'+hl+'</div>';
+      }).join('');
+      drop.querySelectorAll('.ac-item').forEach((el,i) => {
+        el.addEventListener('mousedown', e => { e.preventDefault(); input.value = filtered[i]; drop.classList.remove('open'); onSelect(filtered[i]); });
+      });
+    }
+    drop.classList.toggle('open', filtered.length > 0 || q.length > 0);
+  }
+  input.addEventListener('input', show);
+  input.addEventListener('focus', show);
+  document.addEventListener('click', e => {
+    if (!input.contains(e.target) && !drop.contains(e.target)) drop.classList.remove('open');
+  });
+}
+function escRe(s){ return s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'); }
+
+// ── LOAD DATA ──
+const CACHE_KEY = 'litra_db_v3';
+const CACHE_TTL = 60 * 60 * 1000; // 1 jam
+
+function loadSheetData() {
+  // Cek cache dulu
+  try {
+    const raw = localStorage.getItem(CACHE_KEY);
+    if (raw) {
+      const cache = JSON.parse(raw);
+      if (Date.now() - cache.ts < CACHE_TTL) {
+        allData = cache.rows;
+        setupLineAC();
+        setupSPOAC();
+        setupMainSizeAC();
+        // Refresh background pakai JSONP tanpa loading
+        _fetchJSONP(false);
+        return;
+      }
+    }
+  } catch(e) {}
+  // Cache kosong/expired — form langsung muncul, data menyusul
+  _fetchJSONP(true);
+}
+
+function _fetchJSONP(showLoader) {
+  if (showLoader) showLoading('Memuat database...');
+
+  const cbName = '__litraCallback_' + Date.now();
+
+  const timer = setTimeout(() => {
+    _cleanupJSONP(cbName);
+    if (showLoader) {
+      hideLoading();
+      showToast('Timeout — coba refresh halaman.', 'error');
+    }
+  }, 15000);
+
+  window[cbName] = function(json) {
+    clearTimeout(timer);
+    _cleanupJSONP(cbName);
+    if (showLoader) hideLoading();
+    if (json.status === 'ok' && json.rows) {
+      allData = json.rows.filter(r => r.line || r.spo);
+      try {
+        localStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), rows: allData }));
+      } catch(e) {}
+      setupLineAC();
+      setupSPOAC();
+      setupMainSizeAC();
+      if (showLoader) showToast('Database dimuat (' + allData.length + ' data)', 'success');
+    } else if (showLoader) {
+      showToast('Gagal memuat database.', 'error');
+    }
+  };
+
+  const script = document.createElement('script');
+  script.id  = 'jsonp-litra-' + cbName;
+  script.src = GAS_URL + '?type=litra&callback=' + cbName;
+  script.onerror = () => {
+    clearTimeout(timer);
+    _cleanupJSONP(cbName);
+    if (showLoader) {
+      hideLoading();
+      showToast('Gagal koneksi ke server.', 'error');
+    }
+  };
+  document.head.appendChild(script);
+}
+
+function _cleanupJSONP(cbName) {
+  delete window[cbName];
+  const el = document.getElementById('jsonp-litra-' + cbName);
+  if (el) el.remove();
+}
+
+// ── LINE ──
+function setupLineAC() {
+  const lines = [...new Set(allData.map(r => r.line).filter(Boolean))].sort();
+  makeAC('line-input','line-dropdown',
+    () => { const q = document.getElementById('line-input').value.toLowerCase(); return q ? lines.filter(l => l.toLowerCase().includes(q)) : lines; },
+    val => {
+      selectedLine = val; selectedSPO = ''; selectedStyle = '';
+      document.getElementById('spo-input').value = '';
+      document.getElementById('style-text').textContent = 'Terisi otomatis saat SPO dipilih';
+      document.getElementById('style-text').style.fontStyle = 'italic';
+      document.getElementById('style-text').style.color = '#999';
+      document.getElementById('style-display').querySelector('i').style.color = '#999';
+      resetSizeInput(); updatePreview();
+    }
+  );
+}
+
+// ── SPO ──
+function setupSPOAC() {
+  makeAC('spo-input','spo-dropdown',
+    () => {
+      const q = document.getElementById('spo-input').value.toLowerCase();
+      const spos = [...new Set(allData.filter(r => !selectedLine || r.line === selectedLine).map(r => r.spo).filter(Boolean))].sort();
+      return q ? spos.filter(s => s.toLowerCase().includes(q)) : spos;
+    },
+    val => {
+      selectedSPO = val;
+      const match = allData.find(r => (!selectedLine || r.line === selectedLine) && r.spo === val);
+      selectedStyle = match?.style || '';
+      const st = document.getElementById('style-text');
+      const ic = document.getElementById('style-display').querySelector('i');
+      st.textContent = selectedStyle || 'Style tidak ditemukan';
+      st.style.fontStyle = selectedStyle ? 'normal' : 'italic';
+      st.style.color = selectedStyle ? '#0A5C42' : '#999';
+      ic.style.color = selectedStyle ? '#1D9E75' : '#999';
+      resetSizeInput();
+      document.getElementById('size-input').disabled = false;
+      document.getElementById('size-input').placeholder = 'Pilih size...';
+      updatePreview();
+    }
+  );
+}
+
+// ── MAIN SIZE ──
+function setupMainSizeAC() {
+  makeAC('size-input','size-dropdown',
+    () => {
+      const q = document.getElementById('size-input').value.toLowerCase();
+      if (!selectedLine || !selectedSPO) return [];
+      const sizes = [...new Set(allData.filter(r => r.line === selectedLine && r.spo === selectedSPO).map(r => r.size).filter(Boolean))].sort();
+      return q ? sizes.filter(s => s.toLowerCase().includes(q)) : sizes;
+    },
+    val => {
+      entryState[0] = entryState[0] || {};
+      entryState[0].size = val;
+      document.getElementById('size-error').classList.remove('show');
+      updatePreview();
+    }
+  );
+  document.getElementById('size-input').addEventListener('focus', () => {
+    if (!selectedLine || !selectedSPO) document.getElementById('size-error').classList.add('show');
+  });
+}
+
+// ── EXTRA SIZE AC ──
+function setupExtraSizeAC(idx) {
+  makeAC('size-input-'+idx,'size-dropdown-'+idx,
+    () => {
+      const q = (document.getElementById('size-input-'+idx)?.value || '').toLowerCase();
+      if (!selectedLine || !selectedSPO) return [];
+      const sizes = [...new Set(allData.filter(r => r.line === selectedLine && r.spo === selectedSPO).map(r => r.size).filter(Boolean))].sort();
+      return q ? sizes.filter(s => s.toLowerCase().includes(q)) : sizes;
+    },
+    val => {
+      entryState[idx] = entryState[idx] || {};
+      entryState[idx].size = val;
+      updatePreview();
+    }
+  );
+}
+
+function resetSizeInput() {
+  const si = document.getElementById('size-input');
+  si.value = ''; si.disabled = true; si.placeholder = 'Pilih Line & SPO dulu...';
+  entryState[0] = { size:'', type: entryState[0]?.type||'', qty: entryState[0]?.qty||'' };
+}
+
+// ── PREVIEW ──
+function updatePreview() {
+  const card = document.getElementById('preview-card');
+  const es0  = entryState[0] || {};
+  const qty0 = document.getElementById('qty-input-0')?.value || '';
+  const mainOk = selectedLine && selectedSPO && selectedStyle && selectedJam && es0.size && es0.type && qty0;
+  if (!mainOk) { card.style.display='none'; return; }
+  let rows = `
+    <div class="preview-row"><span class="preview-key">Tanggal</span><span class="preview-val">${getTodayFormatted()}</span></div>
+    <div class="preview-row"><span class="preview-key">Jam ke-</span><span class="preview-val">${selectedJam}</span></div>
+    <div class="preview-row"><span class="preview-key">Line</span><span class="preview-val">${selectedLine}</span></div>
+    <div class="preview-row"><span class="preview-key">SPO</span><span class="preview-val">${selectedSPO}</span></div>
+    <div class="preview-row"><span class="preview-key">Style</span><span class="preview-val">${selectedStyle}</span></div>
+    <div class="preview-row"><span class="preview-key">Size</span><span class="preview-val">${es0.size}</span></div>
+    <div class="preview-row"><span class="preview-key">Jenis</span><span class="preview-val">${es0.type==='sewing'?'Out Sewing':'Out No Logo'}</span></div>
+    <div class="preview-row"><span class="preview-key">Qty</span><span class="preview-val">${qty0} pcs</span></div>`;
+  Object.entries(entryState).forEach(([k,st]) => {
+    if (k == 0) return;
+    const q = document.getElementById('qty-input-'+k)?.value || '';
+    if (st.size && st.type && q) {
+      rows += `<div class="divider"></div>
+        <div class="preview-row"><span class="preview-key">Size ${Number(k)+1}</span><span class="preview-val">${st.size}</span></div>
+        <div class="preview-row"><span class="preview-key">Jenis</span><span class="preview-val">${st.type==='sewing'?'Out Sewing':'Out No Logo'}</span></div>
+        <div class="preview-row"><span class="preview-key">Qty</span><span class="preview-val">${q} pcs</span></div>`;
+    }
+  });
+  document.getElementById('preview-content').innerHTML = rows;
+  card.style.display = 'block';
+}
+
+// ── SUBMIT ──
+async function submitData() {
+  let valid = true;
+  if (!selectedLine || !selectedSPO) { showToast('Pilih Line dan SPO.','error'); return; }
+  if (!selectedJam)  { document.getElementById('jam-error').classList.add('show'); valid = false; }
+  const es0  = entryState[0] || {};
+  const qty0 = document.getElementById('qty-input-0').value;
+  if (!es0.size)               { document.getElementById('size-error').classList.add('show'); valid = false; }
+  if (!es0.type)               { document.getElementById('type-error-0').classList.add('show'); valid = false; }
+  if (!qty0 || parseInt(qty0) <= 0) { document.getElementById('qty-error-0').classList.add('show'); valid = false; }
+  if (!valid) { showToast('Lengkapi semua field terlebih dahulu.','error'); return; }
+
+  const rows = [];
+  const pushRow = (size, type, qty) => rows.push({
+    tanggal: getTodayFormatted(), jamKe: selectedJam,
+    line: selectedLine, spo: selectedSPO, size,
+    outSewing: type==='sewing' ? qty : '',
+    outNoLogo: type==='nologo' ? qty : '',
+  });
+  pushRow(es0.size, es0.type, qty0);
+  Object.entries(entryState).forEach(([k,st]) => {
+    if (k == 0) return;
+    const q = document.getElementById('qty-input-'+k)?.value || '';
+    if (st.size && st.type && q) pushRow(st.size, st.type, q);
+  });
+
+  showLoading('Mengirim data...');
+  setBanner('info', 'Mengirim '+rows.length+' data...');
+  let ok = 0;
+  try {
+    for (const row of rows) {
+      const fd = new FormData();
+      Object.entries({ ...row, sheetId: SHEET_ID_WRITE }).forEach(([k,v]) => fd.append(k,v));
+      const res    = await fetch(GAS_URL, { method:'POST', body: fd });
+      const result = await res.json();
+      if (result.status === 'ok') ok++;
+      else throw new Error(result.message || 'Error');
+    }
+    setBanner('done', ok+' data berhasil terkirim ✓');
+    showToast('✓ '+ok+' data berhasil disimpan!', 'success');
+    resetForm();
+    setTimeout(() => setBanner('',''), 5000);
+  } catch(e) {
+    setBanner('failed', 'Sebagian data gagal terkirim');
+    showToast('Gagal mengirim. Coba lagi.', 'error');
+  } finally {
+    hideLoading();
+  }
+}
+
+function resetForm() {
+  selectedLine=''; selectedSPO=''; selectedStyle=''; selectedJam=null;
+  ['line-input','spo-input'].forEach(id => document.getElementById(id).value = '');
+  const st = document.getElementById('style-text');
+  st.textContent='Terisi otomatis saat SPO dipilih'; st.style.fontStyle='italic'; st.style.color='#999';
+  document.getElementById('size-input').value='';
+  document.getElementById('size-input').disabled=true;
+  document.getElementById('size-input').placeholder='Pilih Line & SPO dulu...';
+  document.getElementById('qty-input-0').value='';
+  document.querySelectorAll('.jam-btn').forEach(b => b.classList.remove('selected'));
+  ['chip-sewing-0','chip-nologo-0'].forEach(id => document.getElementById(id)?.classList.remove('selected'));
+  entryState = { 0: { size:'', type:'', qty:'' } };
+  document.getElementById('toggle-extra').checked = false;
+  toggleExtraSizes(false);
+  document.getElementById('preview-card').style.display='none';
+}
+
+// ── HELPERS ──
+function showLoading(t) { document.getElementById('loading-text').textContent=t; document.getElementById('loading').classList.add('show'); }
+function hideLoading()  { document.getElementById('loading').classList.remove('show'); }
+function showToast(msg, type) {
+  const t = document.getElementById('toast');
+  t.textContent=msg; t.className='toast '+type+' show';
+  setTimeout(()=>t.classList.remove('show'),3500);
+}
+
+// ── INIT ──
+window.addEventListener('DOMContentLoaded', loadSheetData);
+</script>
+</body>
+</html>
