@@ -44,15 +44,15 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .section-lbl{font-size:10px;color:#999;letter-spacing:2px;text-transform:uppercase;margin-bottom:16px}
 
 /* CARDS */
-.form-card{background:white;border-radius:20px;border:.5px solid rgba(0,0,0,0.08);margin-bottom:16px;overflow:hidden}
-.form-card-header{background:rgba(29,158,117,0.07);padding:14px 18px;display:flex;align-items:center;gap:8px;border-bottom:.5px solid rgba(29,158,117,0.12)}
+.form-card{background:white;border-radius:20px;border:.5px solid rgba(0,0,0,0.08);margin-bottom:16px}
+.form-card-header{background:rgba(29,158,117,0.07);padding:14px 18px;display:flex;align-items:center;gap:8px;border-bottom:.5px solid rgba(29,158,117,0.12);border-radius:20px 20px 0 0}
 .card-step-dot{width:8px;height:8px;border-radius:50%;background:linear-gradient(135deg,#378ADD,#1D9E75);flex-shrink:0}
 .card-title-text{font-size:12px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:#0A5C42}
 .form-card-body{padding:18px}
 
 /* FIELD */
 .field{margin-bottom:14px}
-.field:last-child{margin-bottom:0}
+.field:last-child{margin-bottom:0px}
 .field-label{font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:#999;margin-bottom:6px;display:flex;align-items:center;gap:5px}
 .field-label i{color:#1D9E75;font-size:13px}
 .field-input{width:100%;padding:11px 14px;border-radius:12px;border:1.5px solid #E5E7E6;font-size:14px;color:#111;background:#FAFAFA;outline:none;transition:border-color .15s,background .15s;font-family:inherit;appearance:none}
@@ -209,7 +209,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
       Input Output Per Jam
     </div>
 
-    <!-- CARD 1: LINE -->
+    <!-- CARD LINE -->
     <div class="form-card">
       <div class="form-card-header">
         <div class="card-step-dot"></div>
@@ -226,23 +226,32 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
       </div>
     </div>
 
-    <!-- SPO GROUPS (muncul setelah Line dipilih) -->
-    <div id="spo-groups-container"></div>
-
-    <!-- TAMBAH SPO BUTTON -->
-    <button class="add-spo-btn" id="add-spo-btn" onclick="addSPOGroup()" style="display:none">
-      <i class="ti ti-plus" style="font-size:16px"></i> Tambah SPO Lain
-    </button>
-
-    <!-- CARD JAM (setelah SPO) -->
-    <div class="form-card" id="jam-card" style="display:none">
+    <!-- CARD INPUT UTAMA (muncul setelah Line dipilih) -->
+    <div class="form-card" id="main-input-card" style="display:none">
       <div class="form-card-header">
         <div class="card-step-dot"></div>
-        <span class="card-title-text">Jam Ke-</span>
+        <span class="card-title-text">Input Output</span>
       </div>
-      <div class="form-card-body">
+      <div class="form-card-body" id="main-input-body" style="padding-bottom:20px">
+
+        <!-- SPO GROUPS -->
+        <div id="spo-groups-container"></div>
+
+        <!-- TAMBAH SIZE & SPO BUTTONS -->
+        <button class="add-size-btn" id="add-size-btn" onclick="addSizeToCurrentGroup()" style="display:none;margin-top:4px">
+          <i class="ti ti-plus" style="font-size:14px"></i> Tambah Size
+        </button>
+        <button class="add-spo-btn" id="add-spo-btn" onclick="addSPOGroup()" style="display:none;margin-top:8px">
+          <i class="ti ti-plus" style="font-size:16px"></i> Tambah SPO
+        </button>
+
+        <div class="divider"></div>
+
+        <!-- JAM -->
+        <div class="field-label" style="margin-bottom:8px"><i class="ti ti-clock"></i> Jam Ke-</div>
         <div class="jam-grid" id="jam-grid"></div>
         <div class="error-msg" id="jam-error">Pilih jam terlebih dahulu.</div>
+
       </div>
     </div>
 
@@ -375,23 +384,25 @@ function makeAC(inputId, dropdownId, getOpts, onSelect) {
 function escRe(s){ return s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'); }
 
 // ── LINE AUTOCOMPLETE ──
+let lineACSetup = false;
 function setupLineAC() {
-  const lines = [...new Set(allData.map(r => r.line).filter(Boolean))].sort();
+  if (lineACSetup) return; // hanya setup sekali
+  lineACSetup = true;
   makeAC('line-input','line-dropdown',
     () => {
+      // Selalu baca allData terbaru
+      const lines = [...new Set(allData.map(r => r.line).filter(Boolean))].sort();
       const q = document.getElementById('line-input').value.toLowerCase();
       return q ? lines.filter(l => l.toLowerCase().includes(q)) : lines;
     },
     val => {
       selectedLine = val;
-      // Reset SPO groups
       spoGroups = []; spoGroupCount = 0;
       document.getElementById('spo-groups-container').innerHTML = '';
       document.getElementById('add-spo-btn').style.display = 'none';
-      // Tambah group pertama
+      document.getElementById('add-size-btn').style.display = 'none';
+      document.getElementById('main-input-card').style.display = 'block';
       addSPOGroup();
-      // Tampilkan card Jam
-      document.getElementById('jam-card').style.display = 'block';
       updatePreview();
     }
   );
@@ -403,51 +414,45 @@ function setupMainSizeAC() {}
 function addSPOGroup() {
   const gid = spoGroupCount++;
   spoGroups[gid] = { spo:'', style:'', entries:[] };
-
   const isFirst = gid === 0;
+
   const wrap = document.createElement('div');
-  wrap.className = 'form-card';
   wrap.id = 'spo-group-'+gid;
-  wrap.style.marginBottom = '12px';
 
-  wrap.innerHTML =
-    '<div class="form-card-header">' +
-      '<div class="card-step-dot"></div>' +
-      '<span class="card-title-text">SPO ' + (gid+1) + '</span>' +
-      (!isFirst ? '<button class="remove-btn" onclick="removeSPOGroup('+gid+')" style="margin-left:auto"><i class="ti ti-x" style="font-size:12px"></i> Hapus</button>' : '') +
+  // Separator line for extra SPO groups
+  const sep = !isFirst
+    ? '<div class="divider" style="margin:0 0 14px"></div>' +
+      '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">' +
+        '<span style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#378ADD">SPO '+(gid+1)+'</span>' +
+        '<button class="remove-btn" onclick="removeSPOGroup('+gid+')"><i class="ti ti-x" style="font-size:12px"></i> Hapus SPO</button>' +
+      '</div>'
+    : '';
+
+  wrap.innerHTML = sep +
+    '<div class="field">' +
+      '<div class="field-label"><i class="ti ti-file-text"></i>SPO / Order</div>' +
+      '<div class="ac-wrap">' +
+        '<input type="text" id="spo-g'+gid+'" class="field-input" placeholder="Ketik SPO..." autocomplete="off" />' +
+        '<div class="ac-drop" id="spo-drop-g'+gid+'"></div>' +
+      '</div>' +
     '</div>' +
-    '<div class="form-card-body">' +
-      '<div class="field">' +
-        '<div class="field-label"><i class="ti ti-file-text"></i>SPO / Order</div>' +
-        '<div class="ac-wrap">' +
-          '<input type="text" id="spo-g'+gid+'" class="field-input" placeholder="Ketik SPO..." autocomplete="off" />' +
-          '<div class="ac-drop" id="spo-drop-g'+gid+'"></div>' +
-        '</div>' +
+    '<div class="field">' +
+      '<div class="field-label"><i class="ti ti-tag"></i>Style</div>' +
+      '<div class="field-filled" id="style-disp-g'+gid+'">' +
+        '<i class="ti ti-info-circle" style="color:#999;font-size:14px"></i>' +
+        '<span id="style-txt-g'+gid+'" style="color:#999;font-style:italic;font-size:13px">Terisi otomatis saat SPO dipilih</span>' +
       '</div>' +
-      '<div class="field">' +
-        '<div class="field-label"><i class="ti ti-tag"></i>Style</div>' +
-        '<div class="field-filled" id="style-disp-g'+gid+'">' +
-          '<i class="ti ti-info-circle" style="color:#999;font-size:14px"></i>' +
-          '<span id="style-txt-g'+gid+'" style="color:#999;font-style:italic;font-size:13px">Terisi otomatis saat SPO dipilih</span>' +
-        '</div>' +
-      '</div>' +
-      '<div class="divider"></div>' +
-      '<div id="entries-g'+gid+'"></div>' +
-      '<button class="add-size-btn" onclick="addSizeToGroup('+gid+')">' +
-        '<i class="ti ti-plus" style="font-size:14px"></i> Tambah Size' +
-      '</button>' +
-    '</div>';
+    '</div>' +
+    '<div id="entries-g'+gid+'"></div>';
 
-  // Insert before add-spo-btn
-  const addBtn = document.getElementById('add-spo-btn');
-  document.getElementById('spo-groups-container').insertBefore(wrap, addBtn);
+  document.getElementById('spo-groups-container').appendChild(wrap);
 
-  // Setup AC after DOM ready
   setTimeout(() => {
     setupGroupSPOAC(gid);
     addSizeToGroup(gid);
-    // Show tambah SPO button
-    addBtn.style.display = 'flex';
+    document.getElementById('add-spo-btn').style.display = 'flex';
+    document.getElementById('add-size-btn').style.display = 'flex';
+    document.getElementById('add-size-btn').setAttribute('data-current-gid', gid);
   }, 10);
 
   updatePreview();
@@ -458,6 +463,12 @@ function removeSPOGroup(gid) {
   if (el) el.remove();
   spoGroups[gid] = null;
   updatePreview();
+}
+
+function addSizeToCurrentGroup() {
+  const btn = document.getElementById('add-size-btn');
+  const gid = parseInt(btn.getAttribute('data-current-gid') || '0');
+  addSizeToGroup(gid);
 }
 
 // ── SIZE ENTRY ──
@@ -476,7 +487,7 @@ function addSizeToGroup(gid) {
   wrap.id = 'entry-g'+gid+'-e'+eid;
   wrap.style.marginBottom = '10px';
   wrap.innerHTML =
-    '<div class="extra-entry-header">' +
+    '<div class="extra-entry-header" style="margin-bottom:8px">' +
       '<span class="extra-entry-label">Size '+(eid+1)+'</span>' +
       removeBtn +
     '</div>' +
@@ -538,7 +549,7 @@ function setupGroupSPOAC(gid) {
     () => {
       const q = (document.getElementById('spo-g'+gid)?.value||'').toLowerCase();
       const spos = [...new Set(
-        allData.filter(r => !selectedLine || r.line === selectedLine)
+        allData.filter(r => r.line === selectedLine)
                .map(r => r.spo).filter(Boolean)
       )].sort();
       return q ? spos.filter(s => s.toLowerCase().includes(q)) : spos;
@@ -603,7 +614,7 @@ function collectRows() {
 }
 
 // ── LOAD DATA ──
-const CACHE_KEY = 'litra_db_v5';
+const CACHE_KEY = 'litra_db_v6';
 const CACHE_TTL = 60 * 60 * 1000;
 
 function loadSheetData() {
@@ -733,7 +744,8 @@ function resetForm() {
   document.getElementById('spo-groups-container').innerHTML = '';
   spoGroups = []; spoGroupCount = 0;
   document.getElementById('add-spo-btn').style.display = 'none';
-  document.getElementById('jam-card').style.display = 'none';
+  document.getElementById('add-size-btn').style.display = 'none';
+  document.getElementById('main-input-card').style.display = 'none';
   document.getElementById('preview-card').style.display = 'none';
 }
 
