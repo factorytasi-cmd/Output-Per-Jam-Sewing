@@ -396,11 +396,14 @@ function renderSPOGroup(gid) {
     </div>`;
 
   document.getElementById('spo-groups-container').appendChild(wrap);
-  // setTimeout agar DOM sudah siap sebelum AC di-setup
   setTimeout(() => {
     setupGroupSPOAC(gid);
     addSizeToGroup(gid);
   }, 0);
+  // Pastikan tombol Tambah SPO selalu di paling bawah container
+  const addBtn = document.getElementById('add-spo-btn');
+  document.getElementById('spo-groups-container').appendChild(addBtn);
+  addBtn.style.display = 'flex';
 }
 
 function addSPOGroup() {
@@ -658,7 +661,6 @@ function setupLineAC() {
       spoGroups = []; spoGroupCount = 0;
       // Buat group pertama
       addSPOGroup();
-      document.getElementById('add-spo-btn').style.display = 'flex';
       updatePreview();
     }
   );
