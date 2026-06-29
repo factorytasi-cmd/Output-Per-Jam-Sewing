@@ -118,6 +118,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 /* ADD SIZE BUTTON */
 .add-size-btn{width:100%;padding:13px;border-radius:14px;border:1.5px dashed rgba(29,158,117,0.4);background:rgba(29,158,117,0.04);color:#0A5C42;font-size:13px;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .15s;margin-top:10px;font-family:inherit}
 .add-size-btn:active{background:rgba(29,158,117,0.1);transform:scale(0.98)}
+.add-spo-btn{width:100%;padding:14px;border-radius:14px;border:1.5px dashed rgba(55,138,221,0.5);background:rgba(55,138,221,0.05);color:#134E8A;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .15s;margin-bottom:12px;font-family:inherit}
+.add-spo-btn:active{background:rgba(55,138,221,0.12);transform:scale(0.98)}
+.form-card-header{display:flex;align-items:center;gap:8px}
 
 /* PREVIEW */
 .preview-row{display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:.5px solid #F0F2F1;font-size:12px}
@@ -250,74 +253,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
       </div>
     </div>
 
-    <!-- CARD 3: SIZE + OUTPUT + QTY -->
-    <div class="form-card">
-      <div class="form-card-header">
-        <div class="card-step-dot"></div>
-        <span class="card-title-text">Size, Output &amp; Qty</span>
-      </div>
-      <div class="form-card-body">
+    <!-- CARD 3: SPO GROUPS -->
+    <div id="spo-groups-container"></div>
 
-        <!-- MAIN ENTRY -->
-        <div class="field">
-          <div class="field-label"><i class="ti ti-ruler"></i>Size</div>
-          <div class="ac-wrap">
-            <input type="text" id="size-input" class="field-input" placeholder="Pilih Line &amp; SPO dulu..." autocomplete="off" disabled />
-            <div class="ac-drop" id="size-dropdown"></div>
-          </div>
-          <div class="error-msg" id="size-error">Pilih Line dan SPO terlebih dahulu.</div>
-        </div>
-
-        <div class="field">
-          <div class="field-label"><i class="ti ti-activity"></i>Jenis Output</div>
-          <div class="chip-row">
-            <div class="chip" id="chip-sewing-0" onclick="selectChip(0,'sewing')">
-              <div class="chip-icon">🧵</div>
-              <span class="chip-label">Out Sewing</span>
-              <span class="chip-sub">Jahit selesai</span>
-            </div>
-            <div class="chip" id="chip-nologo-0" onclick="selectChip(0,'nologo')">
-              <div class="chip-icon">📦</div>
-              <span class="chip-label">Out No Logo</span>
-              <span class="chip-sub">Tanpa logo</span>
-            </div>
-          </div>
-          <div class="error-msg" id="type-error-0">Pilih jenis output.</div>
-        </div>
-
-        <div class="field">
-          <div class="field-label"><i class="ti ti-number"></i>Jumlah Output (pcs)</div>
-          <div class="number-wrap">
-            <input type="number" id="qty-input-0" class="number-input" placeholder="0" min="0" step="1" inputmode="numeric" data-idx="0" oninput="sanitizeQty(this)" />
-            <span class="unit-label">pcs</span>
-          </div>
-          <div class="error-msg" id="qty-error-0">Masukkan jumlah yang valid.</div>
-        </div>
-
-        <div class="divider"></div>
-
-        <!-- TOGGLE TAMBAH SIZE -->
-        <div class="toggle-row">
-          <label class="toggle-wrap">
-            <input type="checkbox" id="toggle-extra" onchange="toggleExtraSizes(this.checked)" />
-            <span class="toggle-slider"></span>
-          </label>
-          <div>
-            <span class="toggle-text">Tambah Size?</span>
-            <span class="toggle-sub">Input beberapa size sekaligus</span>
-          </div>
-        </div>
-
-        <!-- EXTRA SIZES -->
-        <div id="extra-sizes-section">
-          <div id="extra-entries"></div>
-          <button class="add-size-btn" onclick="addSizeEntry()">
-            <i class="ti ti-plus" style="font-size:16px"></i> Tambah Size
-          </button>
-        </div>
-
-      </div>
-    </div>
+    <!-- TAMBAH SPO BUTTON -->
+    <button class="add-spo-btn" id="add-spo-btn" onclick="addSPOGroup()" style="display:none">
+      <i class="ti ti-plus" style="font-size:16px"></i> Tambah SPO Lain
+    </button>
 
     <!-- PREVIEW CARD -->
     <div class="form-card" id="preview-card" style="display:none">
@@ -363,11 +305,10 @@ const GAS_URL = 'https://script.google.com/macros/s/AKfycbz2r-ACgSbzAGZctkCr-dLo
 
 let allData      = [];
 let selectedLine = '';
-let selectedSPO  = '';
-let selectedStyle= '';
 let selectedJam  = null;
-let entryState   = { 0: { size:'', type:'', qty:'' } };
-let extraCount   = 0;
+// spoGroups: array of { spo, style, entries: [{size, type, qty}] }
+let spoGroups    = [];
+let spoGroupCount= 0;
 
 // ── CLOCK ──
 function updateClock() {
@@ -413,96 +354,190 @@ for (let i = 1; i <= 11; i++) {
   jamGrid.appendChild(b);
 }
 
-// ── CHIP SELECT ──
-function selectChip(idx, type) {
-  entryState[idx] = entryState[idx] || {};
-  entryState[idx].type = type;
-  ['sewing','nologo'].forEach(t => {
-    const el = document.getElementById('chip-'+t+'-'+idx);
-    if (el) el.classList.toggle('selected', t === type);
-  });
-  const err = document.getElementById('type-error-'+idx);
-  if (err) err.classList.remove('show');
-  updatePreview();
-}
-
-// ── QTY SANITIZE ──
-function sanitizeQty(el) {
-  el.value = el.value.replace(/[^0-9]/g, '');
-  const idx = el.dataset.idx || 0;
-  entryState[idx] = entryState[idx] || {};
-  entryState[idx].qty = el.value;
-  updatePreview();
-}
-
-// ── TOGGLE EXTRA ──
-function toggleExtraSizes(on) {
-  const sec = document.getElementById('extra-sizes-section');
-  if (on) {
-    sec.classList.add('visible');
-    if (extraCount === 0) addSizeEntry();
-  } else {
-    sec.classList.remove('visible');
-    document.getElementById('extra-entries').innerHTML = '';
-    extraCount = 0;
-    Object.keys(entryState).forEach(k => { if (k > 0) delete entryState[k]; });
-    updatePreview();
-  }
-}
-
-function addSizeEntry() {
-  extraCount++;
-  const idx = extraCount;
-  entryState[idx] = { size:'', type:'', qty:'' };
+// ── SPO GROUP: render satu group ──
+function renderSPOGroup(gid) {
+  const g = spoGroups[gid];
   const wrap = document.createElement('div');
-  wrap.className = 'extra-entry'; wrap.id = 'entry-'+idx;
+  wrap.className = 'form-card'; wrap.id = 'spo-group-'+gid;
+  wrap.style.marginBottom = '12px';
+
+  const isFirst = gid === 0;
+  const headerExtra = isFirst ? '' :
+    `<button class="remove-btn" onclick="removeSPOGroup(${gid})" style="margin-left:auto">
+       <i class="ti ti-x" style="font-size:12px"></i> Hapus SPO
+     </button>`;
+
+  wrap.innerHTML = `
+    <div class="form-card-header">
+      <div class="card-step-dot"></div>
+      <span class="card-title-text">SPO & Size</span>
+      ${headerExtra}
+    </div>
+    <div class="form-card-body">
+      <div class="field">
+        <div class="field-label"><i class="ti ti-file-text"></i>SPO / Order</div>
+        <div class="ac-wrap">
+          <input type="text" id="spo-g${gid}" class="field-input" placeholder="Ketik SPO..." autocomplete="off" />
+          <div class="ac-drop" id="spo-drop-g${gid}"></div>
+        </div>
+      </div>
+      <div class="field">
+        <div class="field-label"><i class="ti ti-tag"></i>Style</div>
+        <div class="field-filled" id="style-disp-g${gid}">
+          <i class="ti ti-info-circle" style="color:#999;font-size:14px"></i>
+          <span id="style-txt-g${gid}" style="color:#999;font-style:italic;font-size:13px">Terisi otomatis saat SPO dipilih</span>
+        </div>
+      </div>
+      <div class="divider"></div>
+      <div id="entries-g${gid}"></div>
+      <button class="add-size-btn" onclick="addSizeToGroup(${gid})">
+        <i class="ti ti-plus" style="font-size:14px"></i> Tambah Size
+      </button>
+    </div>`;
+
+  document.getElementById('spo-groups-container').appendChild(wrap);
+  // setTimeout agar DOM sudah siap sebelum AC di-setup
+  setTimeout(() => {
+    setupGroupSPOAC(gid);
+    addSizeToGroup(gid);
+  }, 0);
+}
+
+function addSPOGroup() {
+  const gid = spoGroupCount++;
+  spoGroups[gid] = { spo:'', style:'', entries:[] };
+  renderSPOGroup(gid);
+  updatePreview();
+}
+
+function removeSPOGroup(gid) {
+  const el = document.getElementById('spo-group-'+gid);
+  if (el) el.remove();
+  spoGroups[gid] = null;
+  updatePreview();
+  if (Object.values(spoGroups).filter(g => g !== null).length <= 1)
+    document.getElementById('add-spo-btn').style.display = 'none';
+}
+
+// ── SIZE ENTRY DALAM GROUP ──
+function addSizeToGroup(gid) {
+  const g = spoGroups[gid];
+  if (!g) return;
+  const eid = g.entries.length;
+  g.entries.push({ size:'', type:'', qty:'' });
+
+  const wrap = document.createElement('div');
+  wrap.className = 'extra-entry'; wrap.id = `entry-g${gid}-e${eid}`;
+  wrap.style.marginBottom = '8px';
+
+  const removeBtn = eid > 0
+    ? `<button class="remove-btn" onclick="removeSizeFromGroup(${gid},${eid})">
+         <i class="ti ti-x" style="font-size:12px"></i> Hapus
+       </button>` : '';
+
   wrap.innerHTML = `
     <div class="extra-entry-header">
-      <span class="extra-entry-label">Size ${idx+1}</span>
-      <button class="remove-btn" onclick="removeSizeEntry(${idx})">
-        <i class="ti ti-x" style="font-size:12px"></i> Hapus
-      </button>
+      <span class="extra-entry-label">Size ${eid+1}</span>
+      ${removeBtn}
     </div>
-    <div class="field">
+    <div class="field" style="margin-bottom:8px">
       <div class="field-label"><i class="ti ti-ruler"></i>Size</div>
       <div class="ac-wrap">
-        <input type="text" id="size-input-${idx}" class="field-input" placeholder="Pilih size..." autocomplete="off" style="font-size:13px" />
-        <div class="ac-drop" id="size-dropdown-${idx}"></div>
+        <input type="text" id="size-g${gid}-e${eid}" class="field-input" placeholder="Pilih size..." autocomplete="off"
+          style="font-size:13px" ${g.spo ? '' : 'disabled'} />
+        <div class="ac-drop" id="size-drop-g${gid}-e${eid}"></div>
       </div>
     </div>
-    <div class="field">
-      <div class="field-label"><i class="ti ti-activity"></i>Jenis Output</div>
-      <div class="chip-row">
-        <div class="chip" id="chip-sewing-${idx}" onclick="selectChip(${idx},'sewing')">
-          <div class="chip-icon" style="font-size:16px">🧵</div>
-          <span class="chip-label" style="font-size:11px">Out Sewing</span>
-        </div>
-        <div class="chip" id="chip-nologo-${idx}" onclick="selectChip(${idx},'nologo')">
-          <div class="chip-icon" style="font-size:16px">📦</div>
-          <span class="chip-label" style="font-size:11px">Out No Logo</span>
-        </div>
+    <div class="chip-row" style="margin-bottom:8px">
+      <div class="chip" id="chip-sewing-g${gid}-e${eid}" onclick="selectChipG(${gid},${eid},'sewing')">
+        <div class="chip-icon" style="font-size:16px">🧵</div>
+        <span class="chip-label" style="font-size:11px">Out Sewing</span>
       </div>
-      <div class="error-msg" id="type-error-${idx}">Pilih jenis output.</div>
+      <div class="chip" id="chip-nologo-g${gid}-e${eid}" onclick="selectChipG(${gid},${eid},'nologo')">
+        <div class="chip-icon" style="font-size:16px">📦</div>
+        <span class="chip-label" style="font-size:11px">Out No Logo</span>
+      </div>
     </div>
-    <div class="field">
-      <div class="field-label"><i class="ti ti-number"></i>Jumlah (pcs)</div>
-      <div class="number-wrap">
-        <input type="number" id="qty-input-${idx}" class="number-input" placeholder="0" min="0" step="1" inputmode="numeric"
-          data-idx="${idx}" oninput="sanitizeQty(this)" style="font-size:16px" />
-        <span class="unit-label">pcs</span>
-      </div>
-      <div class="error-msg" id="qty-error-${idx}">Masukkan jumlah yang valid.</div>
+    <div class="number-wrap">
+      <input type="number" id="qty-g${gid}-e${eid}" class="number-input" placeholder="0" min="0" step="1"
+        inputmode="numeric" data-gid="${gid}" data-eid="${eid}" oninput="sanitizeQtyG(this)" style="font-size:16px" />
+      <span class="unit-label">pcs</span>
     </div>`;
-  document.getElementById('extra-entries').appendChild(wrap);
-  setupExtraSizeAC(idx);
+
+  document.getElementById('entries-g'+gid).appendChild(wrap);
+  if (g.spo) setupSizeAC(gid, eid);
   updatePreview();
 }
 
-function removeSizeEntry(idx) {
-  const el = document.getElementById('entry-'+idx);
+function removeSizeFromGroup(gid, eid) {
+  const el = document.getElementById(`entry-g${gid}-e${eid}`);
   if (el) el.remove();
-  delete entryState[idx];
+  if (spoGroups[gid]) spoGroups[gid].entries[eid] = null;
   updatePreview();
+}
+
+function selectChipG(gid, eid, type) {
+  if (!spoGroups[gid] || !spoGroups[gid].entries[eid]) return;
+  spoGroups[gid].entries[eid].type = type;
+  ['sewing','nologo'].forEach(t => {
+    const el = document.getElementById(`chip-${t}-g${gid}-e${eid}`);
+    if (el) el.classList.toggle('selected', t === type);
+  });
+  updatePreview();
+}
+
+function sanitizeQtyG(el) {
+  el.value = el.value.replace(/[^0-9]/g, '');
+  const gid = el.dataset.gid; const eid = el.dataset.eid;
+  if (spoGroups[gid] && spoGroups[gid].entries[eid])
+    spoGroups[gid].entries[eid].qty = el.value;
+  updatePreview();
+}
+
+// ── AUTOCOMPLETE SPO PER GROUP ──
+function setupGroupSPOAC(gid) {
+  makeAC('spo-g'+gid, 'spo-drop-g'+gid,
+    () => {
+      const q = (document.getElementById('spo-g'+gid)?.value||'').toLowerCase();
+      const spos = [...new Set(allData.filter(r => !selectedLine || r.line === selectedLine).map(r => r.spo).filter(Boolean))].sort();
+      return q ? spos.filter(s => s.toLowerCase().includes(q)) : spos;
+    },
+    val => {
+      if (!spoGroups[gid]) return;
+      spoGroups[gid].spo = val;
+      const match = allData.find(r => (!selectedLine || r.line === selectedLine) && r.spo === val);
+      spoGroups[gid].style = match?.style || '';
+      const st = document.getElementById('style-txt-g'+gid);
+      st.textContent = spoGroups[gid].style || 'Style tidak ditemukan';
+      st.style.fontStyle = spoGroups[gid].style ? 'normal' : 'italic';
+      st.style.color = spoGroups[gid].style ? '#0A5C42' : '#999';
+      // enable size inputs dan setup AC
+      spoGroups[gid].entries.forEach((e, eid) => {
+        if (e === null) return;
+        const si = document.getElementById(`size-g${gid}-e${eid}`);
+        if (si) { si.disabled = false; si.value = ''; }
+        setupSizeAC(gid, eid);
+      });
+      updatePreview();
+    }
+  );
+}
+
+function setupSizeAC(gid, eid) {
+  makeAC(`size-g${gid}-e${eid}`, `size-drop-g${gid}-e${eid}`,
+    () => {
+      const q = (document.getElementById(`size-g${gid}-e${eid}`)?.value||'').toLowerCase();
+      const spo = spoGroups[gid]?.spo;
+      if (!selectedLine || !spo) return [];
+      const sizes = [...new Set(allData.filter(r => r.line === selectedLine && r.spo === spo).map(r => r.size).filter(Boolean))].sort();
+      return q ? sizes.filter(s => s.toLowerCase().includes(q)) : sizes;
+    },
+    val => {
+      if (spoGroups[gid] && spoGroups[gid].entries[eid])
+        spoGroups[gid].entries[eid].size = val;
+      updatePreview();
+    }
+  );
 }
 
 // ── AUTOCOMPLETE ENGINE ──
@@ -617,148 +652,86 @@ function setupLineAC() {
   makeAC('line-input','line-dropdown',
     () => { const q = document.getElementById('line-input').value.toLowerCase(); return q ? lines.filter(l => l.toLowerCase().includes(q)) : lines; },
     val => {
-      selectedLine = val; selectedSPO = ''; selectedStyle = '';
-      document.getElementById('spo-input').value = '';
-      document.getElementById('style-text').textContent = 'Terisi otomatis saat SPO dipilih';
-      document.getElementById('style-text').style.fontStyle = 'italic';
-      document.getElementById('style-text').style.color = '#999';
-      document.getElementById('style-display').querySelector('i').style.color = '#999';
-      resetSizeInput(); updatePreview();
-    }
-  );
-}
-
-// ── SPO ──
-function setupSPOAC() {
-  makeAC('spo-input','spo-dropdown',
-    () => {
-      const q = document.getElementById('spo-input').value.toLowerCase();
-      const spos = [...new Set(allData.filter(r => !selectedLine || r.line === selectedLine).map(r => r.spo).filter(Boolean))].sort();
-      return q ? spos.filter(s => s.toLowerCase().includes(q)) : spos;
-    },
-    val => {
-      selectedSPO = val;
-      const match = allData.find(r => (!selectedLine || r.line === selectedLine) && r.spo === val);
-      selectedStyle = match?.style || '';
-      const st = document.getElementById('style-text');
-      const ic = document.getElementById('style-display').querySelector('i');
-      st.textContent = selectedStyle || 'Style tidak ditemukan';
-      st.style.fontStyle = selectedStyle ? 'normal' : 'italic';
-      st.style.color = selectedStyle ? '#0A5C42' : '#999';
-      ic.style.color = selectedStyle ? '#1D9E75' : '#999';
-      resetSizeInput();
-      document.getElementById('size-input').disabled = false;
-      document.getElementById('size-input').placeholder = 'Pilih size...';
+      selectedLine = val;
+      // Reset semua SPO groups
+      document.getElementById('spo-groups-container').innerHTML = '';
+      spoGroups = []; spoGroupCount = 0;
+      // Buat group pertama
+      addSPOGroup();
+      document.getElementById('add-spo-btn').style.display = 'flex';
       updatePreview();
     }
   );
 }
 
-// ── MAIN SIZE ──
-function setupMainSizeAC() {
-  makeAC('size-input','size-dropdown',
-    () => {
-      const q = document.getElementById('size-input').value.toLowerCase();
-      if (!selectedLine || !selectedSPO) return [];
-      const sizes = [...new Set(allData.filter(r => r.line === selectedLine && r.spo === selectedSPO).map(r => r.size).filter(Boolean))].sort();
-      return q ? sizes.filter(s => s.toLowerCase().includes(q)) : sizes;
-    },
-    val => {
-      entryState[0] = entryState[0] || {};
-      entryState[0].size = val;
-      document.getElementById('size-error').classList.remove('show');
-      updatePreview();
-    }
-  );
-  document.getElementById('size-input').addEventListener('focus', () => {
-    if (!selectedLine || !selectedSPO) document.getElementById('size-error').classList.add('show');
-  });
-}
-
-// ── EXTRA SIZE AC ──
-function setupExtraSizeAC(idx) {
-  makeAC('size-input-'+idx,'size-dropdown-'+idx,
-    () => {
-      const q = (document.getElementById('size-input-'+idx)?.value || '').toLowerCase();
-      if (!selectedLine || !selectedSPO) return [];
-      const sizes = [...new Set(allData.filter(r => r.line === selectedLine && r.spo === selectedSPO).map(r => r.size).filter(Boolean))].sort();
-      return q ? sizes.filter(s => s.toLowerCase().includes(q)) : sizes;
-    },
-    val => {
-      entryState[idx] = entryState[idx] || {};
-      entryState[idx].size = val;
-      updatePreview();
-    }
-  );
-}
-
-function resetSizeInput() {
-  const si = document.getElementById('size-input');
-  si.value = ''; si.disabled = true; si.placeholder = 'Pilih Line & SPO dulu...';
-  entryState[0] = { size:'', type: entryState[0]?.type||'', qty: entryState[0]?.qty||'' };
-}
+function setupSPOAC() {} // SPO AC sekarang per-group
+function setupMainSizeAC() {} // Size AC sekarang per-group
 
 // ── PREVIEW ──
 function updatePreview() {
   const card = document.getElementById('preview-card');
-  const es0  = entryState[0] || {};
-  const qty0 = document.getElementById('qty-input-0')?.value || '';
-  const mainOk = selectedLine && selectedSPO && selectedStyle && selectedJam && es0.size && es0.type && qty0;
-  if (!mainOk) { card.style.display='none'; return; }
-  let rows = `
+  if (!selectedLine || !selectedJam) { card.style.display='none'; return; }
+
+  const validRows = collectRows();
+  if (!validRows.length) { card.style.display='none'; return; }
+
+  let html = `
     <div class="preview-row"><span class="preview-key">Tanggal</span><span class="preview-val">${getTodayFormatted()}</span></div>
     <div class="preview-row"><span class="preview-key">Jam ke-</span><span class="preview-val">${selectedJam}</span></div>
     <div class="preview-row"><span class="preview-key">Line</span><span class="preview-val">${selectedLine}</span></div>
-    <div class="preview-row"><span class="preview-key">SPO</span><span class="preview-val">${selectedSPO}</span></div>
-    <div class="preview-row"><span class="preview-key">Style</span><span class="preview-val">${selectedStyle}</span></div>
-    <div class="preview-row"><span class="preview-key">Size</span><span class="preview-val">${es0.size}</span></div>
-    <div class="preview-row"><span class="preview-key">Jenis</span><span class="preview-val">${es0.type==='sewing'?'Out Sewing':'Out No Logo'}</span></div>
-    <div class="preview-row"><span class="preview-key">Qty</span><span class="preview-val">${qty0} pcs</span></div>`;
-  Object.entries(entryState).forEach(([k,st]) => {
-    if (k == 0) return;
-    const q = document.getElementById('qty-input-'+k)?.value || '';
-    if (st.size && st.type && q) {
-      rows += `<div class="divider"></div>
-        <div class="preview-row"><span class="preview-key">Size ${Number(k)+1}</span><span class="preview-val">${st.size}</span></div>
-        <div class="preview-row"><span class="preview-key">Jenis</span><span class="preview-val">${st.type==='sewing'?'Out Sewing':'Out No Logo'}</span></div>
-        <div class="preview-row"><span class="preview-key">Qty</span><span class="preview-val">${q} pcs</span></div>`;
-    }
+    <div class="divider"></div>`;
+
+  validRows.forEach((r, i) => {
+    if (i > 0) html += '<div class="divider"></div>';
+    html += `
+      <div class="preview-row"><span class="preview-key">SPO</span><span class="preview-val">${r.spo}</span></div>
+      <div class="preview-row"><span class="preview-key">Style</span><span class="preview-val">${r.style}</span></div>
+      <div class="preview-row"><span class="preview-key">Size</span><span class="preview-val">${r.size}</span></div>
+      <div class="preview-row"><span class="preview-key">Jenis</span><span class="preview-val">${r.type==='sewing'?'Out Sewing':'Out No Logo'}</span></div>
+      <div class="preview-row"><span class="preview-key">Qty</span><span class="preview-val">${r.qty} pcs</span></div>`;
   });
-  document.getElementById('preview-content').innerHTML = rows;
+
+  document.getElementById('preview-content').innerHTML = html;
   card.style.display = 'block';
+}
+
+function collectRows() {
+  const rows = [];
+  spoGroups.forEach((g, gid) => {
+    if (!g || !g.spo) return;
+    g.entries.forEach((e, eid) => {
+      if (!e) return;
+      const qty = document.getElementById(`qty-g${gid}-e${eid}`)?.value || '';
+      if (e.size && e.type && qty)
+        rows.push({ spo: g.spo, style: g.style, size: e.size, type: e.type, qty });
+    });
+  });
+  return rows;
 }
 
 // ── SUBMIT ──
 async function submitData() {
-  let valid = true;
-  if (!selectedLine || !selectedSPO) { showToast('Pilih Line dan SPO.','error'); return; }
-  if (!selectedJam)  { document.getElementById('jam-error').classList.add('show'); valid = false; }
-  const es0  = entryState[0] || {};
-  const qty0 = document.getElementById('qty-input-0').value;
-  if (!es0.size)               { document.getElementById('size-error').classList.add('show'); valid = false; }
-  if (!es0.type)               { document.getElementById('type-error-0').classList.add('show'); valid = false; }
-  if (!qty0 || parseInt(qty0) <= 0) { document.getElementById('qty-error-0').classList.add('show'); valid = false; }
-  if (!valid) { showToast('Lengkapi semua field terlebih dahulu.','error'); return; }
+  if (!selectedLine) { showToast('Pilih Line terlebih dahulu.','error'); return; }
+  if (!selectedJam)  { document.getElementById('jam-error').classList.add('show'); showToast('Pilih jam terlebih dahulu.','error'); return; }
 
-  const rows = [];
-  const pushRow = (size, type, qty) => rows.push({
-    tanggal: getTodayFormatted(), jamKe: selectedJam,
-    line: selectedLine, spo: selectedSPO, size,
-    outSewing: type==='sewing' ? qty : '',
-    outNoLogo: type==='nologo' ? qty : '',
-  });
-  pushRow(es0.size, es0.type, qty0);
-  Object.entries(entryState).forEach(([k,st]) => {
-    if (k == 0) return;
-    const q = document.getElementById('qty-input-'+k)?.value || '';
-    if (st.size && st.type && q) pushRow(st.size, st.type, q);
-  });
+  const rows = collectRows();
+  if (!rows.length) { showToast('Lengkapi SPO, Size, Jenis & Qty terlebih dahulu.','error'); return; }
 
-  showLoading('Mengirim data...');
-  setBanner('info', 'Mengirim '+rows.length+' data...');
+  const payload = rows.map(r => ({
+    tanggal:   getTodayFormatted(),
+    jamKe:     selectedJam,
+    line:      selectedLine,
+    spo:       r.spo,
+    size:      r.size,
+    outSewing: r.type === 'sewing' ? r.qty : '',
+    outNoLogo: r.type === 'nologo' ? r.qty : '',
+  }));
+
+  showLoading('Mengirim ' + payload.length + ' data...');
+  setBanner('info', 'Mengirim '+payload.length+' data...');
   let ok = 0;
   try {
-    for (const row of rows) {
+    for (const row of payload) {
       const fd = new FormData();
       Object.entries({ ...row, sheetId: SHEET_ID_WRITE }).forEach(([k,v]) => fd.append(k,v));
       const res    = await fetch(GAS_URL, { method:'POST', body: fd });
@@ -779,20 +752,13 @@ async function submitData() {
 }
 
 function resetForm() {
-  selectedLine=''; selectedSPO=''; selectedStyle=''; selectedJam=null;
-  ['line-input','spo-input'].forEach(id => document.getElementById(id).value = '');
-  const st = document.getElementById('style-text');
-  st.textContent='Terisi otomatis saat SPO dipilih'; st.style.fontStyle='italic'; st.style.color='#999';
-  document.getElementById('size-input').value='';
-  document.getElementById('size-input').disabled=true;
-  document.getElementById('size-input').placeholder='Pilih Line & SPO dulu...';
-  document.getElementById('qty-input-0').value='';
+  selectedLine=''; selectedJam=null;
+  document.getElementById('line-input').value = '';
   document.querySelectorAll('.jam-btn').forEach(b => b.classList.remove('selected'));
-  ['chip-sewing-0','chip-nologo-0'].forEach(id => document.getElementById(id)?.classList.remove('selected'));
-  entryState = { 0: { size:'', type:'', qty:'' } };
-  document.getElementById('toggle-extra').checked = false;
-  toggleExtraSizes(false);
-  document.getElementById('preview-card').style.display='none';
+  document.getElementById('spo-groups-container').innerHTML = '';
+  spoGroups = []; spoGroupCount = 0;
+  document.getElementById('add-spo-btn').style.display = 'none';
+  document.getElementById('preview-card').style.display = 'none';
 }
 
 // ── HELPERS ──
