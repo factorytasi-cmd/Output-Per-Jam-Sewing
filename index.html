@@ -711,6 +711,7 @@ async function submitData() {
     line:      selectedLine, spo: r.spo, size: r.size,
     outSewing: r.type==='sewing' ? r.qty : '',
     outNoLogo: r.type==='nologo' ? r.qty : '',
+    style:     r.style,
   }));
 
   showLoading('Mengirim '+payload.length+' data...');
